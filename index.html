@@ -1,7 +1,7 @@
 <!doctype html><html lang="id"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="theme-color" content="#ffffff"><link rel="manifest" href="manifest.json"><link rel="apple-touch-icon" href="icon-192.png">
-<title>SehatKu Kantor</title>
+<title>SigerFit</title>
 <style>
 :root{--a:#1d3f8a;--b:#0f2557;--g:linear-gradient(135deg,#1d3f8a,#0f2557);--gold:#d9a521;--gg:linear-gradient(135deg,#ecc96b,#d09a12);--t:#0f1f3d;--m:#6b7794}
 *{box-sizing:border-box}button,input,select{font-family:inherit}
@@ -74,12 +74,12 @@ const fl=(m,g,c)=>{const f={};
 const badge=h=>`<span class="bd ${h?'h':''}">${h?'Di atas normal':'Normal'}</span>`;
 
 /* ---------- Auth ---------- */
-function auth(){const r=S.reg;$('#app').innerHTML=`<div class="c" style="margin-top:8vh;text-align:center"><span class="orb" style="width:56px;height:56px"></span><h1 style="margin-top:10px">SehatKu</h1><p class="m">${r?'Buat akun pegawai':'Masuk untuk mencatat kesehatan Anda'}</p>
+function auth(){const r=S.reg;$('#app').innerHTML=`<div class="c" style="margin-top:8vh;text-align:center"><img src="logo.png" alt="SigerFit" style="width:min(72%,260px);height:auto;mix-blend-mode:multiply"><p class="m">${r?'Buat akun pegawai':'Masuk untuk mencatat kesehatan Anda'}</p>
 <form onsubmit="doAuth(event)">${r?F('nama','Nama lengkap','','text','required')+F('umur','Umur (tahun)','','number','required')+SEL('gender','Jenis kelamin',[['Laki-laki','Laki-laki'],['Perempuan','Perempuan']])+F('bb','Berat badan (kg)')+F('tb','Tinggi badan (cm)')+(S.units&&S.units.length?SEL('unit','Unit kerja',[['','Pilih unit…'],...S.units.map(x=>[x,x])]):'')+F('riwayat','Riwayat penyakit bawaan (jika ada)','','text'):''}
 ${F('email','Email','','email','required')}${F('password','Kata sandi (min. 6 karakter)','','password','required')}
 ${r?'<label style="display:flex;gap:10px;align-items:center"><input type="checkbox" required style="width:24px;min-height:24px;margin:0">Saya setuju data kesehatan saya dipakai kantor secara agregat dan anonim.</label>':''}
 <button class="btn">${r?'Daftar':'Masuk'}</button></form>
-<button class="btn s" onclick="toReg()">${r?'Sudah punya akun? Masuk':'Belum punya akun? Daftar'}</button>${r?'':'<button type="button" class="lk" style="display:block;margin:14px auto 0" onclick="fForgot()">Lupa kata sandi?</button>'}</div><div class="fn">SehatKu v.1.0<br>Kantor Wilayah DJPb Provinsi Lampung<br>2026</div><p class="m" style="text-align:center;margin:0 0 24px;font-size:12px">SehatKu v.1.0</p>`}
+<button class="btn s" onclick="toReg()">${r?'Sudah punya akun? Masuk':'Belum punya akun? Daftar'}</button>${r?'':'<button type="button" class="lk" style="display:block;margin:14px auto 0" onclick="fForgot()">Lupa kata sandi?</button>'}</div><div class="fn">SigerFit v.1.0<br>Kantor Wilayah DJPb Provinsi Lampung<br>2026</div><p class="m" style="text-align:center;margin:0 0 24px;font-size:12px">SigerFit v.1.0</p>`}
 async function doAuth(e){e.preventDefault();const b=e.target.querySelector('button');b.disabled=1;b.textContent='Memproses…';
  try{const d=await api(S.reg?'register':'login',val(e.target));S.t=localStorage.t=d.token;await boot()}
  catch(x){toast(x);b.disabled=0;b.textContent=S.reg?'Daftar':'Masuk'}}
@@ -93,7 +93,7 @@ function scoreCard(l,f){if(!l)return'';const s=wkStats(),nf=Object.values(f).fil
 <svg width="116" height="116" viewBox="0 0 116 116"><defs><linearGradient id="gg" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#ecc96b"/><stop offset="1" stop-color="#d09a12"/></linearGradient></defs><circle cx="58" cy="58" r="44" fill="none" stroke="#e8edf8" stroke-width="12"/><circle cx="58" cy="58" r="44" fill="none" stroke="url(#gg)" stroke-width="12" stroke-linecap="round" stroke-dasharray="${(C*sk/100).toFixed(1)} ${C.toFixed(1)}" transform="rotate(-90 58 58)"/><svg x="46" y="46" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#12285a" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round">${IP.m}</svg></svg></div>
 <p class="m">Skor indikatif dari indikator terakhir dan progres workout; bukan diagnosis.</p></div>`}
 const nb=(k,i,t)=>`<button data-k="${k}" onclick="S.tab='${k}';show()">${i}<span>${t}</span></button>`;
-function shell(){$('#app').innerHTML=`<header><div class="row" style="gap:10px"><span class="orb"></span><h1>SehatKu</h1></div><div class="row"><button class="av" onclick="prof()" aria-label="Profil" ${avs()}>${S.u.fotoData?'':esc(S.u.nama[0]||'?')}</button><button class="lk" onclick="out()">Keluar</button></div></header><div id="main"></div>
+function shell(){$('#app').innerHTML=`<header><div class="row" style="gap:10px"><img src="icon-192.png" alt="" width="34" height="34" style="border-radius:10px"><h1>SigerFit</h1></div><div class="row"><button class="av" onclick="prof()" aria-label="Profil" ${avs()}>${S.u.fotoData?'':esc(S.u.nama[0]||'?')}</button><button class="lk" onclick="out()">Keluar</button></div></header><div id="main"></div>
 <nav>${nb('dash',IC.h,'Beranda')}${nb('med',IC.m,'Medis')}<button class="fab" onclick="pick()" aria-label="Rekam Data">+</button>${nb('wo',IC.w,'Workout')}${S.u.role=='admin'?nb('adm',IC.a,'Admin'):''}</nav>`}
 async function show(){document.querySelectorAll('nav button[data-k]').forEach(b=>b.classList.toggle('on',b.dataset.k==S.tab));
  const m=$('#main');m.innerHTML='<div class="sk"></div><div class="sk"></div>';
@@ -224,13 +224,13 @@ const fsel=(k,l,o)=>`<select aria-label="${l}" onchange="S.fl.${k}=this.value;sh
 const fbar=()=>`<div class="c noprint"><div class="m">Filter kelompok (data tetap anonim)</div><div class="g3">${fsel('unit','Unit',(S.units||[]).map(x=>[x,x]))}${fsel('gender','Jenis kelamin',[['Laki-laki','Laki-laki'],['Perempuan','Perempuan']])}${fsel('age','Umur',['<30','30-39','40-49','50+'].map(x=>[x,x]))}</div></div>`;
 const fdesc=()=>['unit','gender','age'].map(k=>S.fl[k]?k+': '+S.fl[k]:'').filter(Boolean).join(', ')||'Semua pegawai';
 const xbar=()=>`<div class="c noprint"><div class="row"><button class="lk" onclick="exCsv()">⬇ Unduh Excel (CSV)</button><button class="lk" onclick="window.print()">🖨 Cetak / PDF</button></div></div><div class="prt">Laporan Kesehatan Pegawai · ${PER.find(x=>x[0]==S.per)[1]} · ${esc(fdesc())} · ${today()}</div>`;
-function exCsv(){const d=S.rep,t=d.terbaru,q=[['Laporan agregat anonim SehatKu'],['Periode tren',PER.find(x=>x[0]==S.per)[1]],['Filter',fdesc()],['Tanggal',today()],[],['Indikator','Pegawai terukur','% di atas normal','Indikasi kebutuhan obat']];
+function exCsv(){const d=S.rep,t=d.terbaru,q=[['Laporan agregat anonim SigerFit'],['Periode tren',PER.find(x=>x[0]==S.per)[1]],['Filter',fdesc()],['Tanggal',today()],[],['Indikator','Pegawai terukur','% di atas normal','Indikasi kebutuhan obat']];
  Object.keys(N).forEach(k=>{const p=P(t[k]);q.push([N[k],t[k].n,p==null?'':p,p>=10?OBAT[k]:''])});
  const T=Object.fromEntries(d.tren.map(x=>[x.b,x])),W=Object.fromEntries(d.woTren.map(x=>[x.b,x])),ks=[...new Set([...Object.keys(T),...Object.keys(W)])].sort().slice(-6),ok=(o,f)=>ks.map(b=>o[b]&&!o[b].min?f(o[b]):'');
  q.push([],['Tren',...ks.map(lab)]);Object.keys(N).forEach(k=>q.push([N[k]+' (% di atas normal)',...ok(T,x=>P(x[k]))]));
  q.push(['Pegawai aktif workout',...ok(W,x=>x.aktif)],['Total sesi workout',...ok(W,x=>x.sesi)],['Total menit workout',...ok(W,x=>x.menit)]);
  const csv='\ufeff'+q.map(r=>r.map(c=>'"'+String(c??'').replace(/"/g,'""')+'"').join(';')).join('\r\n'),a=document.createElement('a');
- a.href=URL.createObjectURL(new Blob([csv],{type:'text/csv;charset=utf-8'}));a.download='laporan-sehatku-'+today()+'.csv';a.click()}
+ a.href=URL.createObjectURL(new Blob([csv],{type:'text/csv;charset=utf-8'}));a.download='laporan-sigerfit-'+today()+'.csv';a.click()}
 
 /* ---------- Target, lencana, tantangan kantor ---------- */
 const wk=d=>{const t=new Date(d+'T00:00:00');t.setDate(t.getDate()-(t.getDay()+6)%7);return t.toLocaleDateString('sv')};
