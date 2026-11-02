@@ -1,0 +1,131 @@
+<!doctype html><html lang="id"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#ffffff"><link rel="manifest" href="manifest.json"><link rel="apple-touch-icon" href="icon-192.png">
+<title>SehatKu Kantor</title>
+<style>
+:root{--a:#5b7cff;--b:#9b5cff;--g:linear-gradient(135deg,var(--a),var(--b));--t:#1c2240;--m:#7a82a6}
+*{box-sizing:border-box}button,input,select{font-family:inherit}
+body{margin:0;font:16px/1.45 system-ui,'Segoe UI',Roboto,sans-serif;color:var(--t);background:radial-gradient(600px 300px at 90% -5%,#e6ebff,transparent),radial-gradient(500px 300px at -10% 10%,#f1e8ff,transparent),#fff;min-height:100vh;padding-bottom:calc(100px + env(safe-area-inset-bottom))}
+header{display:flex;justify-content:space-between;align-items:center;padding:calc(14px + env(safe-area-inset-top)) 18px 6px}
+h1{font-size:20px;margin:0}h3{margin:4px 0 12px}
+.c{background:rgba(255,255,255,.72);backdrop-filter:blur(12px);border:1px solid #e6eaff;border-radius:20px;padding:16px;margin:12px 16px;box-shadow:0 6px 24px rgba(91,124,255,.08);animation:u .35s ease}
+@keyframes u{from{opacity:0;transform:translateY(8px)}}
+.btn{display:block;width:100%;min-height:52px;border:0;border-radius:16px;background:var(--g);color:#fff;font-weight:600;font-size:16px;margin-top:14px;cursor:pointer}
+.btn.s{background:#eef1ff;color:var(--a)}.btn:disabled{opacity:.6}
+.lk{border:0;background:#eef1ff;color:var(--a);border-radius:99px;padding:8px 14px;font-size:13px;cursor:pointer}
+label{display:block;font-size:13px;color:var(--m);margin-top:10px}
+input,select{width:100%;min-height:48px;margin-top:4px;padding:0 14px;border:1px solid #dde2f7;border-radius:14px;font-size:16px;background:#fff;color:var(--t)}
+nav{position:fixed;bottom:0;left:0;right:0;display:flex;justify-content:space-around;align-items:center;padding:8px 8px calc(8px + env(safe-area-inset-bottom));background:rgba(255,255,255,.88);backdrop-filter:blur(14px);border-top:1px solid #e6eaff}
+nav button{flex:1;background:0;border:0;min-height:48px;font-size:12px;color:var(--m)}nav button.on{color:var(--a);font-weight:700}
+nav .fab{flex:0 0 60px;width:60px;height:60px;margin-top:-34px;border-radius:50%;background:var(--g);color:#fff;font-size:32px;box-shadow:0 8px 20px rgba(120,92,255,.4)}
+.ov{position:fixed;inset:0;background:rgba(20,26,60,.35);display:flex;align-items:flex-end;z-index:9}
+.sh{background:#fff;width:100%;max-height:90vh;overflow:auto;border-radius:24px 24px 0 0;padding:20px 18px calc(24px + env(safe-area-inset-bottom));animation:u .3s}
+.row{display:flex;justify-content:space-between;align-items:center;gap:8px;margin:4px 0}.m{color:var(--m);font-size:13px}
+.bd{padding:2px 10px;border-radius:99px;font-size:12px;font-weight:600;background:#e6f8ef;color:#12875a}.bd.h{background:#ffeaea;color:#d33}
+.bar{height:10px;border-radius:9px;background:#eef1ff;overflow:hidden;margin:8px 0}.bar i{display:block;height:100%;background:var(--g)}
+.empty{text-align:center;color:var(--m);padding:40px 24px}
+.sk{height:90px;border-radius:20px;margin:12px 16px;background:linear-gradient(90deg,#eef1ff,#f8f9ff,#eef1ff);background-size:200%;animation:s 1.2s infinite}@keyframes s{to{background-position:-200%}}
+.toast{position:fixed;top:20px;left:50%;transform:translateX(-50%);background:#1c2240;color:#fff;padding:12px 18px;border-radius:14px;z-index:99;max-width:90%}
+.g2{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:0 16px}.g2 .c{margin:0}
+.tab{display:flex;gap:6px;margin:8px 16px}.tab button{flex:1;min-height:44px;border:0;border-radius:12px;background:#eef1ff;color:var(--a);font-weight:600;font-size:14px}.tab .on{background:var(--g);color:#fff}
+</style></head><body><div id="app"></div>
+<script>
+const API='GANTI_DENGAN_URL_WEB_APP_APPS_SCRIPT';
+const $=s=>document.querySelector(s),S={t:localStorage.t,tab:'dash',sub:'umum',med:[],wo:[],reg:false};
+const N={gula:'Gula darah',td:'Tekanan darah',au:'Asam urat',kol:'Kolesterol'};
+const REC={gula:'Kurangi gula & karbohidrat sederhana, perbanyak serat, dan ulangi cek gula darah.',td:'Kurangi garam, kelola stres, tidur cukup, dan pantau tekanan darah rutin.',au:'Kurangi jeroan, seafood tertentu & minuman manis; perbanyak minum air putih.',kol:'Kurangi gorengan & lemak jenuh; perbanyak sayur, buah, dan olahraga.'};
+const OBAT={gula:'antidiabetik & strip/alat cek gula darah',td:'antihipertensi & tensimeter',au:'obat penurun asam urat & pereda nyeri sendi',kol:'obat/suplemen penurun kolesterol'};
+const esc=s=>String(s??'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const has=v=>v!==''&&v!=null,today=()=>new Date().toLocaleDateString('sv'),by=(a,b)=>a.tanggal<b.tanggal?-1:1;
+const val=f=>Object.fromEntries(new FormData(f));
+async function api(a,p){const r=await(await fetch(API,{method:'POST',body:JSON.stringify({a,p,t:S.t})})).json();
+ if(!r.ok){if(/Sesi/.test(r.e))out();throw r.e}return r.d}
+function toast(m){const d=document.createElement('div');d.className='toast';d.textContent=m;document.body.append(d);setTimeout(()=>d.remove(),2800)}
+const F=(n,l,v='',t='number',x='')=>`<label>${l}<input name="${n}" type="${t}" value="${esc(v)}" step="any" ${x}></label>`;
+const SEL=(n,l,o,v)=>`<label>${l}<select name="${n}">${o.map(([k,t])=>`<option value="${k}" ${k==v?'selected':''}>${t}</option>`).join('')}</select></label>`;
+function sheet(h){const d=document.createElement('div');d.className='ov';d.innerHTML=`<div class="sh">${h}</div>`;d.onclick=e=>{if(e.target==d)d.remove()};document.body.append(d);return d}
+const cl=()=>document.querySelectorAll('.ov').forEach(x=>x.remove());
+const spark=(v,w=110,h=30)=>{v=v.filter(x=>x!=null&&!isNaN(x));if(v.length<2)return'';const a=Math.min(...v),r=(Math.max(...v)-a)||1;
+ return`<svg width="${w}" height="${h}"><polyline fill="none" stroke="#7a6cf5" stroke-width="2.5" stroke-linecap="round" points="${v.map((y,i)=>(i/(v.length-1)*w).toFixed(1)+','+(h-3-(y-a)/r*(h-6)).toFixed(1)).join(' ')}"/></svg>`};
+const fl=(m,g,c)=>{const f={};
+ if(has(m.gula))f.gula=+m.gula>=c[m.jenisGula=='puasa'?'gula_puasa':m.jenisGula=='2jam'?'gula_2jam':'gula_sewaktu'];
+ if(has(m.sis)||has(m.dia))f.td=+m.sis>=c.sis||+m.dia>=c.dia;
+ if(has(m.asamUrat))f.au=+m.asamUrat>(g=='Perempuan'?c.au_wanita:c.au_pria);
+ if(has(m.kolesterol))f.kol=+m.kolesterol>=c.kol;return f};
+const badge=h=>`<span class="bd ${h?'h':''}">${h?'Di atas normal':'Normal'}</span>`;
+
+/* ---------- Auth ---------- */
+function auth(){const r=S.reg;$('#app').innerHTML=`<div class="c" style="margin-top:8vh"><h1>💙 SehatKu</h1><p class="m">${r?'Buat akun pegawai':'Masuk untuk mencatat kesehatan Anda'}</p>
+<form onsubmit="doAuth(event)">${r?F('nama','Nama lengkap','','text','required')+F('umur','Umur (tahun)','','number','required')+SEL('gender','Jenis kelamin',[['Laki-laki','Laki-laki'],['Perempuan','Perempuan']])+F('bb','Berat badan (kg)')+F('tb','Tinggi badan (cm)')+F('riwayat','Riwayat penyakit bawaan (jika ada)','','text'):''}
+${F('email','Email','','email','required')}${F('password','Kata sandi (min. 6 karakter)','','password','required')}
+${r?'<label style="display:flex;gap:10px;align-items:center"><input type="checkbox" required style="width:24px;min-height:24px;margin:0">Saya setuju data kesehatan saya dipakai kantor secara agregat dan anonim.</label>':''}
+<button class="btn">${r?'Daftar':'Masuk'}</button></form>
+<button class="btn s" onclick="S.reg=!S.reg;auth()">${r?'Sudah punya akun? Masuk':'Belum punya akun? Daftar'}</button></div>`}
+async function doAuth(e){e.preventDefault();const b=e.target.querySelector('button');b.disabled=1;b.textContent='Memproses…';
+ try{const d=await api(S.reg?'register':'login',val(e.target));S.t=localStorage.t=d.token;await boot()}
+ catch(x){toast(x);b.disabled=0;b.textContent=S.reg?'Daftar':'Masuk'}}
+function out(){localStorage.removeItem('t');S.t=null;auth()}
+
+/* ---------- Shell ---------- */
+const nb=(k,i,t)=>`<button data-k="${k}" onclick="S.tab='${k}';show()"><div>${i}</div>${t}</button>`;
+function shell(){$('#app').innerHTML=`<header><h1>💙 SehatKu</h1><button class="lk" onclick="out()">Keluar</button></header><div id="main"></div>
+<nav>${nb('dash','🏠','Beranda')}${nb('med','🩺','Medis')}<button class="fab" onclick="pick()" aria-label="Rekam Data">+</button>${nb('wo','🏃','Workout')}${S.u.role=='admin'?nb('adm','🛡️','Admin'):''}</nav>`}
+async function show(){document.querySelectorAll('nav button[data-k]').forEach(b=>b.classList.toggle('on',b.dataset.k==S.tab));
+ const m=$('#main');m.innerHTML='<div class="sk"></div><div class="sk"></div>';
+ try{m.innerHTML=await V[S.tab]()}catch(x){m.innerHTML=`<div class="empty">${esc(x)}</div>`}}
+async function boot(){try{const d=await api('boot');Object.assign(S,{u:d.user,c:d.cfg,med:d.med,wo:d.wo});shell();show()}catch(x){S.t?toast(x):auth()}}
+function pick(){sheet(`<h3>Rekam Data</h3><button class="btn" onclick="cl();fMed()">🩺 Medical Check Up</button><button class="btn s" onclick="cl();fWo()">🏃 Workout</button>`)}
+function save(d,a,id){d.querySelector('form').onsubmit=async e=>{e.preventDefault();const b=e.target.querySelector('button');b.disabled=1;b.textContent='Menyimpan…';
+ try{await api(a,{...val(e.target),id});d.remove();toast('Tersimpan ✓');await boot()}catch(x){toast(x);b.disabled=0;b.textContent='Simpan'}}}
+function fMed(m={}){save(sheet(`<h3>${m.id?'Ubah':'Rekam'} Medical Check Up</h3><form>${F('tanggal','Tanggal',m.tanggal||today(),'date','required')}
+${SEL('jenisGula','Jenis pengukuran gula darah',[['puasa','Puasa'],['2jam','2 jam setelah makan'],['sewaktu','Sewaktu']],m.jenisGula)}
+${F('gula','Gula darah (mg/dL)',m.gula)}${F('sis','Tekanan darah sistolik (mmHg)',m.sis)}${F('dia','Tekanan darah diastolik (mmHg)',m.dia)}
+${F('asamUrat','Asam urat (mg/dL)',m.asamUrat)}${F('kolesterol','Kolesterol total (mg/dL)',m.kolesterol)}${F('catatan','Catatan',m.catatan,'text')}
+<button class="btn">Simpan</button></form>`),'saveMed',m.id)}
+function fWo(m={}){save(sheet(`<h3>${m.id?'Ubah':'Rekam'} Workout</h3><form>${F('tanggal','Tanggal',m.tanggal||today(),'date','required')}
+${SEL('jenis','Jenis workout',['Lari','Jalan','Sepeda','Renang','Gym','Senam/Yoga','Lainnya'].map(x=>[x,x]),m.jenis)}
+${F('durasi','Durasi (menit)',m.durasi,'number','required')}${F('kalori','Kalori (kkal)',m.kalori)}${F('hr','Rata-rata detak jantung (bpm)',m.hr)}
+<button class="btn">Simpan</button></form>`),'saveWo',m.id)}
+async function del(k,id){if(!confirm('Hapus data ini?'))return;try{await api('del'+k,{id});toast('Dihapus');await boot()}catch(x){toast(x)}}
+
+/* ---------- Views pegawai ---------- */
+const empty=t=>`<div class="empty">${t}<br>Tekan tombol <b>+</b> untuk merekam.</div>`;
+const V={
+dash(){const m=[...S.med].sort(by),l=m.at(-1),u=S.u,f=l?fl(l,u.gender,S.c):{},bmi=u.bb&&u.tb?(u.bb/(u.tb/100)**2).toFixed(1):'–';
+ const d7=new Date(Date.now()-7*864e5).toLocaleDateString('sv'),w=S.wo.filter(x=>x.tanggal>=d7),min=w.reduce((s,x)=>s+(+x.durasi||0),0);
+ const vl=l?{gula:has(l.gula)?l.gula+' mg/dL':'–',td:has(l.sis)||has(l.dia)?l.sis+'/'+l.dia:'–',au:has(l.asamUrat)?l.asamUrat:'–',kol:has(l.kolesterol)?l.kolesterol:'–'}:{};
+ const tr={gula:'gula',td:'sis',au:'asamUrat',kol:'kolesterol'};
+ const rc=Object.keys(f).filter(k=>f[k]).map(k=>REC[k]);if(min<150)rc.push(`Aktivitas 7 hari terakhir ${min} menit. Targetkan 150 menit/minggu.`);
+ return`<div class="c"><div class="row"><div><div class="m">Halo,</div><b style="font-size:20px">${esc(u.nama)}</b></div><span class="bd">IMT ${bmi}</span></div></div>
+${l?`<div class="g2">${Object.keys(N).map(k=>`<div class="c"><div class="m">${N[k]}</div><b style="font-size:20px">${vl[k]}</b><div>${k in f?badge(f[k]):''}</div>${spark(m.slice(-6).map(x=>has(x[tr[k]])?+x[tr[k]]:null))}</div>`).join('')}</div>`:empty('Belum ada data medical check up.')}
+<div class="c"><h3>Rekomendasi</h3>${rc.length?rc.map(x=>`<p>• ${x}</p>`).join(''):'<p class="m">Semua indikator terakhir normal. Pertahankan!</p>'}</div>
+<div class="c"><div class="row"><b>Workout 7 hari</b><b>${min} mnt</b></div><div class="bar"><i style="width:${Math.min(100,min/1.5)}%"></i></div><div class="m">${w.length} sesi · ${w.reduce((s,x)=>s+(+x.kalori||0),0)} kkal · target 150 mnt</div></div>`},
+med(){const l=[...S.med].sort(by).reverse();if(!l.length)return empty('Belum ada rekaman medical check up.');
+ return l.map(x=>{const f=fl(x,S.u.gender,S.c);return`<div class="c"><div class="row"><b>${esc(x.tanggal)}</b><span><button class="lk" onclick="fMed(S.med.find(z=>z.id=='${x.id}'))">Ubah</button> <button class="lk" onclick="del('Med','${x.id}')">Hapus</button></span></div>
+${[['gula','Gula darah'+(has(x.gula)?' ('+x.jenisGula+')':''),has(x.gula)&&x.gula],['td','Tekanan darah',(has(x.sis)||has(x.dia))&&x.sis+'/'+x.dia],['au','Asam urat',has(x.asamUrat)&&x.asamUrat],['kol','Kolesterol',has(x.kolesterol)&&x.kolesterol]].filter(i=>i[2]).map(i=>`<div class="row"><span class="m">${i[1]}</span><span>${esc(i[2])} ${badge(f[i[0]])}</span></div>`).join('')}</div>`}).join('')},
+wo(){const l=[...S.wo].sort(by).reverse();if(!l.length)return empty('Belum ada rekaman workout.');
+ return l.map(x=>`<div class="c"><div class="row"><b>${esc(x.jenis)} · ${esc(x.tanggal)}</b><span><button class="lk" onclick="fWo(S.wo.find(z=>z.id=='${x.id}'))">Ubah</button> <button class="lk" onclick="del('Wo','${x.id}')">Hapus</button></span></div>
+<div class="m">${x.durasi||0} menit${has(x.kalori)?' · '+x.kalori+' kkal':''}${has(x.hr)?' · '+x.hr+' bpm':''}</div></div>`).join('')},
+async adm(){return`<div class="tab">${[['umum','Umum'],['ref','Referensi'],['usr','Pengguna']].map(([k,n])=>`<button class="${S.sub==k?'on':''}" onclick="S.sub='${k}';show()">${n}</button>`).join('')}</div>`+await A[S.sub]()}};
+
+/* ---------- Views admin ---------- */
+const P=o=>o&&!o.min&&o.n?Math.round(o.h/o.n*100):null;
+const A={
+async umum(){const d=await api('dashAdmin'),t=d.terbaru;
+ if(t.min)return`<div class="empty">Dashboard tampil setelah minimal 5 pegawai merekam data (saat ini ${t.n}).<br>Ini menjaga anonimitas pegawai.</div>`;
+ const R=Object.keys(N).map(k=>({k,p:P(t[k]),n:t[k].n,tr:d.tren.filter(x=>!x.min).map(x=>P(x[k]))}));
+ return`<div class="g2"><div class="c"><div class="m">Terdaftar</div><b style="font-size:22px">${d.pegawai}</b></div><div class="c"><div class="m">Sudah merekam</div><b style="font-size:22px">${t.n}</b></div></div>`+
+ R.map(r=>`<div class="c"><div class="row"><b>${N[r.k]}</b><b>${r.p==null?'–':r.p+'%'}</b></div><div class="bar"><i style="width:${r.p||0}%"></i></div><div class="row"><span class="m">${r.p==null?'Data belum cukup':r.p+'% pegawai di atas normal (n='+r.n+')'}</span>${spark(r.tr)}</div></div>`).join('')+
+ `<div class="c"><h3>Indikasi kebutuhan obat</h3>${R.filter(r=>r.p>=10).sort((a,b)=>b.p-a.p).map(r=>`<p>• <b>${N[r.k]}</b> (${r.p}%): ${OBAT[r.k]}</p>`).join('')||'<p class="m">Tidak ada indikator di atas 10%.</p>'}<p class="m">Bersifat indikatif, bukan resep. Konsultasikan dengan dokter/apoteker.</p></div>
+ <div class="c"><b>Aktivitas 30 hari terakhir</b><p class="m">${d.wo.aktif} pegawai aktif · ${d.wo.sesi} sesi workout</p></div>`},
+ref(){const L={gula_puasa:'Gula puasa (mg/dL)',gula_2jam:'Gula 2 jam setelah makan (mg/dL)',gula_sewaktu:'Gula sewaktu (mg/dL)',sis:'Sistolik (mmHg)',dia:'Diastolik (mmHg)',au_pria:'Asam urat pria (mg/dL)',au_wanita:'Asam urat wanita (mg/dL)',kol:'Kolesterol total (mg/dL)'};
+ return`<form class="c" onsubmit="saveRef(event)"><h3>Batas nilai normal</h3><p class="m">Nilai di atas/sama dengan batas dianggap "di atas normal" (asam urat: di atas batas).</p>${Object.keys(L).map(k=>F(k,L[k],S.c[k])).join('')}<button class="btn">Simpan</button></form>`},
+async usr(){const l=await api('listUsers');return l.map(x=>`<div class="c"><div class="row"><div><b>${esc(x.nama)}</b><div class="m">${esc(x.email)}</div></div><button class="lk" onclick="delU('${x.id}')">Hapus</button></div>
+${x.id==S.u.id?'<span class="bd">Anda</span>':`<select onchange="setRole('${x.id}',this.value)"><option value="individu" ${x.role=='individu'?'selected':''}>Pegawai</option><option value="admin" ${x.role=='admin'?'selected':''}>Admin</option></select>`}</div>`).join('')}};
+async function saveRef(e){e.preventDefault();try{await api('saveRef',val(e.target));toast('Referensi tersimpan ✓');await boot()}catch(x){toast(x)}}
+async function setRole(id,role){try{await api('setRole',{id,role});toast('Peran diubah ✓')}catch(x){toast(x)}}
+async function delU(id){if(!confirm('Hapus pengguna beserta seluruh datanya?'))return;try{await api('delUser',{id});toast('Dihapus');show()}catch(x){toast(x)}}
+
+S.t?boot():auth();
+if('serviceWorker' in navigator)navigator.serviceWorker.register('sw.js');
+</script></body></html>
