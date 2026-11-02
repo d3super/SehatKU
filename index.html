@@ -3,38 +3,50 @@
 <meta name="theme-color" content="#ffffff"><link rel="manifest" href="manifest.json"><link rel="apple-touch-icon" href="icon-192.png">
 <title>SehatKu Kantor</title>
 <style>
-:root{--a:#5b7cff;--b:#9b5cff;--g:linear-gradient(135deg,var(--a),var(--b));--t:#1c2240;--m:#7a82a6}
+:root{--a:#1d3f8a;--b:#0f2557;--g:linear-gradient(135deg,#1d3f8a,#0f2557);--gold:#d9a521;--gg:linear-gradient(135deg,#ecc96b,#d09a12);--t:#0f1f3d;--m:#6b7794}
 *{box-sizing:border-box}button,input,select{font-family:inherit}
-body{margin:0;font:16px/1.45 system-ui,'Segoe UI',Roboto,sans-serif;color:var(--t);background:radial-gradient(600px 300px at 90% -5%,#e6ebff,transparent),radial-gradient(500px 300px at -10% 10%,#f1e8ff,transparent),#fff;min-height:100vh;padding-bottom:calc(100px + env(safe-area-inset-bottom))}
+body{margin:0;font:16px/1.45 system-ui,'Segoe UI',Roboto,sans-serif;color:var(--t);background:radial-gradient(520px 320px at 85% -8%,#cfdcf7,transparent),radial-gradient(420px 260px at -10% 8%,#f8eac0,transparent),#fff;min-height:100vh;padding-bottom:calc(100px + env(safe-area-inset-bottom))}
 header{display:flex;justify-content:space-between;align-items:center;padding:calc(14px + env(safe-area-inset-top)) 18px 6px}
 h1{font-size:20px;margin:0}h3{margin:4px 0 12px}
-.c{background:rgba(255,255,255,.72);backdrop-filter:blur(12px);border:1px solid #e6eaff;border-radius:20px;padding:16px;margin:12px 16px;box-shadow:0 6px 24px rgba(91,124,255,.08);animation:u .35s ease}
+.c{background:rgba(255,255,255,.72);backdrop-filter:blur(12px);border:1px solid #e3e9f5;border-radius:20px;padding:16px;margin:12px 16px;box-shadow:0 6px 24px rgba(15,37,87,.10);animation:u .35s ease}
 @keyframes u{from{opacity:0;transform:translateY(8px)}}
 .btn{display:block;width:100%;min-height:52px;border:0;border-radius:16px;background:var(--g);color:#fff;font-weight:600;font-size:16px;margin-top:14px;cursor:pointer}
-.btn.s{background:#eef1ff;color:var(--a)}.btn:disabled{opacity:.6}
-.lk{border:0;background:#eef1ff;color:var(--a);border-radius:99px;padding:8px 14px;font-size:13px;cursor:pointer}
+.btn.s{background:#eef2fb;color:var(--a)}.btn:disabled{opacity:.6}
+.lk{border:0;background:#eef2fb;color:var(--a);border-radius:99px;padding:8px 14px;font-size:13px;cursor:pointer}
 label{display:block;font-size:13px;color:var(--m);margin-top:10px}
-input,select{width:100%;min-height:48px;margin-top:4px;padding:0 14px;border:1px solid #dde2f7;border-radius:14px;font-size:16px;background:#fff;color:var(--t)}
-nav{position:fixed;bottom:0;left:0;right:0;display:flex;justify-content:space-around;align-items:center;padding:8px 8px calc(8px + env(safe-area-inset-bottom));background:rgba(255,255,255,.88);backdrop-filter:blur(14px);border-top:1px solid #e6eaff}
+input,select{width:100%;min-height:48px;margin-top:4px;padding:0 14px;border:1px solid #d9e0f0;border-radius:14px;font-size:16px;background:#fff;color:var(--t)}
+nav{position:fixed;bottom:0;left:0;right:0;display:flex;justify-content:space-around;align-items:center;padding:8px 8px calc(8px + env(safe-area-inset-bottom));background:rgba(255,255,255,.88);backdrop-filter:blur(14px);border-top:1px solid #e3e9f5}
 nav button{flex:1;background:0;border:0;min-height:48px;font-size:12px;color:var(--m)}nav button.on{color:var(--a);font-weight:700}
 nav .fab{flex:0 0 60px;width:60px;height:60px;margin-top:-34px;border-radius:50%;background:var(--g);color:#fff;font-size:32px;box-shadow:0 8px 20px rgba(120,92,255,.4)}
 .ov{position:fixed;inset:0;background:rgba(20,26,60,.35);display:flex;align-items:flex-end;z-index:9}
 .sh{background:#fff;width:100%;max-height:90vh;overflow:auto;border-radius:24px 24px 0 0;padding:20px 18px calc(24px + env(safe-area-inset-bottom));animation:u .3s}
 .row{display:flex;justify-content:space-between;align-items:center;gap:8px;margin:4px 0}.m{color:var(--m);font-size:13px}
 .bd{padding:2px 10px;border-radius:99px;font-size:12px;font-weight:600;background:#e6f8ef;color:#12875a}.bd.h{background:#ffeaea;color:#d33}
-.bar{height:10px;border-radius:9px;background:#eef1ff;overflow:hidden;margin:8px 0}.bar i{display:block;height:100%;background:var(--g)}
+.bar{height:10px;border-radius:9px;background:#eef2fb;overflow:hidden;margin:8px 0}.bar i{display:block;height:100%;background:var(--g)}
 .empty{text-align:center;color:var(--m);padding:40px 24px}
-.sk{height:90px;border-radius:20px;margin:12px 16px;background:linear-gradient(90deg,#eef1ff,#f8f9ff,#eef1ff);background-size:200%;animation:s 1.2s infinite}@keyframes s{to{background-position:-200%}}
-.toast{position:fixed;top:20px;left:50%;transform:translateX(-50%);background:#1c2240;color:#fff;padding:12px 18px;border-radius:14px;z-index:99;max-width:90%}
+.sk{height:90px;border-radius:20px;margin:12px 16px;background:linear-gradient(90deg,#eef2fb,#f8f9ff,#eef2fb);background-size:200%;animation:s 1.2s infinite}@keyframes s{to{background-position:-200%}}
+.toast{position:fixed;top:20px;left:50%;transform:translateX(-50%);background:#0f1f3d;color:#fff;padding:12px 18px;border-radius:14px;z-index:99;max-width:90%}
 .g2{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:0 16px}.g2 .c{margin:0}
-.tab{display:flex;gap:6px;margin:8px 16px}.tab button{flex:1;min-height:44px;border:0;border-radius:12px;background:#eef1ff;color:var(--a);font-weight:600;font-size:14px}.tab .on{background:var(--g);color:#fff}
-.av{width:44px;height:44px;border-radius:50%;border:2px solid #e6eaff;background:var(--g) center/cover;color:#fff;font-weight:700;font-size:18px;cursor:pointer}
-.tt{border-collapse:collapse;font-size:13px;width:100%}.tt td,.tt th{padding:6px 8px;text-align:right;white-space:nowrap}.tt td:first-child,.tt th:first-child{text-align:left;color:var(--m)}.tt tr+tr td{border-top:1px solid #eef1ff}
-.tc{padding:12px 0}.tc+.tc{border-top:1px solid #eef1ff}.tc svg{display:block;margin-top:4px}
+.tab{display:flex;gap:6px;margin:8px 16px}.tab button{flex:1;min-height:44px;border:0;border-radius:12px;background:#eef2fb;color:var(--a);font-weight:600;font-size:14px}.tab .on{background:var(--g);color:#fff}
+.av{width:44px;height:44px;border-radius:50%;border:2px solid #e3e9f5;background:var(--g) center/cover;color:#fff;font-weight:700;font-size:18px;cursor:pointer}
+.tt{border-collapse:collapse;font-size:13px;width:100%}.tt td,.tt th{padding:6px 8px;text-align:right;white-space:nowrap}.tt td:first-child,.tt th:first-child{text-align:left;color:var(--m)}.tt tr+tr td{border-top:1px solid #eef2fb}
+.tc{padding:12px 0}.tc+.tc{border-top:1px solid #eef2fb}.tc svg{display:block;margin-top:4px}
 .fn{text-align:center;color:var(--m);font-size:12px;line-height:1.6;margin:8px 16px 0}
 .g3{display:grid;gap:8px;margin-top:6px}.prt{display:none}
 @media print{nav,header,.tab,.noprint,.ov,.toast{display:none!important}body{padding:0;background:#fff}.c{box-shadow:none;break-inside:avoid;backdrop-filter:none}.prt{display:block;margin:16px;font-weight:700}}
-.bgs{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:12px}.bgd{text-align:center;padding:10px 4px;border-radius:14px;background:#f3f0ff;font-size:12px}.bgd.off{opacity:.35;filter:grayscale(1)}
+.bgs{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:12px}.bgd{text-align:center;padding:10px 4px;border-radius:14px;background:#fbf3dc;font-size:12px}.bgd.off{opacity:.35;filter:grayscale(1)}
+body{padding-bottom:calc(120px + env(safe-area-inset-bottom))}
+.c{border-radius:22px;background:rgba(255,255,255,.7);border:1px solid #e3e9f5;box-shadow:0 8px 28px rgba(15,37,87,.09)}
+.bar i{background:var(--gg)}
+nav{left:12px;right:12px;bottom:calc(10px + env(safe-area-inset-bottom));padding:8px 10px;border-radius:30px;border:1px solid rgba(255,255,255,.85);background:rgba(255,255,255,.72);backdrop-filter:blur(18px);-webkit-backdrop-filter:blur(18px);box-shadow:0 10px 30px rgba(15,37,87,.16)}
+nav button{flex:0 0 auto;display:flex;align-items:center;justify-content:center;gap:6px;height:48px;min-width:48px;padding:0 12px;border-radius:24px;color:var(--m);font-size:13px;font-weight:600;transition:all .25s}
+nav button span{display:none}nav button.on{background:var(--g);color:#fff;box-shadow:0 6px 16px rgba(15,37,87,.3)}nav button.on span{display:inline}
+nav .fab{width:60px;height:60px;min-width:60px;padding:0;margin-top:-34px;border-radius:50%;background:var(--gg);color:#0f2557;font-size:32px;font-weight:500;box-shadow:0 8px 22px rgba(208,154,18,.5)}
+.orb{display:inline-block;width:34px;height:34px;border-radius:50%;background:radial-gradient(circle at 30% 30%,#f6e7b4,#d9a521 45%,#12285a 100%);box-shadow:0 4px 12px rgba(15,37,87,.25)}
+.hero{padding:6px 20px 0}.hero h2{font-size:30px;line-height:1.15;margin:8px 0 0;font-weight:700}
+.qa{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin:16px}
+.qa button{text-align:left;display:flex;flex-direction:column;gap:2px;padding:16px;color:var(--t);background:rgba(255,255,255,.75);backdrop-filter:blur(12px);border:1px solid #e3e9f5;border-radius:22px;box-shadow:0 8px 24px rgba(15,37,87,.08);min-height:96px}
+.qa svg{color:var(--gold);margin-bottom:8px}.qa span{font-size:12px;color:var(--m)}
 </style></head><body><div id="app"></div>
 <script>
 const API='https://script.google.com/macros/s/AKfycbyncBaRg4Lv4t6uKYW2xhwsnS5FXcmsoDEO8mGRvCgtJOJnLPJoj5OlAQevUQAFO4tlUg/exec';
@@ -53,7 +65,7 @@ const SEL=(n,l,o,v)=>`<label>${l}<select name="${n}">${o.map(([k,t])=>`<option v
 function sheet(h){const d=document.createElement('div');d.className='ov';d.innerHTML=`<div class="sh">${h}</div>`;d.onclick=e=>{if(e.target==d)d.remove()};document.body.append(d);return d}
 const cl=()=>document.querySelectorAll('.ov').forEach(x=>x.remove());
 const spark=(v,w=110,h=30)=>{v=v.filter(x=>x!=null&&!isNaN(x));if(v.length<2)return'';const a=Math.min(...v),r=(Math.max(...v)-a)||1;
- return`<svg width="${w}" height="${h}"><polyline fill="none" stroke="#7a6cf5" stroke-width="2.5" stroke-linecap="round" points="${v.map((y,i)=>(i/(v.length-1)*w).toFixed(1)+','+(h-3-(y-a)/r*(h-6)).toFixed(1)).join(' ')}"/></svg>`};
+ return`<svg width="${w}" height="${h}"><polyline fill="none" stroke="#1d3f8a" stroke-width="2.5" stroke-linecap="round" points="${v.map((y,i)=>(i/(v.length-1)*w).toFixed(1)+','+(h-3-(y-a)/r*(h-6)).toFixed(1)).join(' ')}"/></svg>`};
 const fl=(m,g,c)=>{const f={};
  if(has(m.gula))f.gula=+m.gula>=c[m.jenisGula=='puasa'?'gula_puasa':m.jenisGula=='2jam'?'gula_2jam':'gula_sewaktu'];
  if(has(m.sis)||has(m.dia))f.td=+m.sis>=c.sis||+m.dia>=c.dia;
@@ -62,7 +74,7 @@ const fl=(m,g,c)=>{const f={};
 const badge=h=>`<span class="bd ${h?'h':''}">${h?'Di atas normal':'Normal'}</span>`;
 
 /* ---------- Auth ---------- */
-function auth(){const r=S.reg;$('#app').innerHTML=`<div class="c" style="margin-top:8vh"><h1>💙 SehatKu</h1><p class="m">${r?'Buat akun pegawai':'Masuk untuk mencatat kesehatan Anda'}</p>
+function auth(){const r=S.reg;$('#app').innerHTML=`<div class="c" style="margin-top:8vh;text-align:center"><span class="orb" style="width:56px;height:56px"></span><h1 style="margin-top:10px">SehatKu</h1><p class="m">${r?'Buat akun pegawai':'Masuk untuk mencatat kesehatan Anda'}</p>
 <form onsubmit="doAuth(event)">${r?F('nama','Nama lengkap','','text','required')+F('umur','Umur (tahun)','','number','required')+SEL('gender','Jenis kelamin',[['Laki-laki','Laki-laki'],['Perempuan','Perempuan']])+F('bb','Berat badan (kg)')+F('tb','Tinggi badan (cm)')+(S.units&&S.units.length?SEL('unit','Unit kerja',[['','Pilih unit…'],...S.units.map(x=>[x,x])]):'')+F('riwayat','Riwayat penyakit bawaan (jika ada)','','text'):''}
 ${F('email','Email','','email','required')}${F('password','Kata sandi (min. 6 karakter)','','password','required')}
 ${r?'<label style="display:flex;gap:10px;align-items:center"><input type="checkbox" required style="width:24px;min-height:24px;margin:0">Saya setuju data kesehatan saya dipakai kantor secara agregat dan anonim.</label>':''}
@@ -74,9 +86,15 @@ async function doAuth(e){e.preventDefault();const b=e.target.querySelector('butt
 function out(){localStorage.removeItem('t');localStorage.removeItem('bd');S.t=null;S.u=null;auth()}
 
 /* ---------- Shell ---------- */
-const nb=(k,i,t)=>`<button data-k="${k}" onclick="S.tab='${k}';show()"><div>${i}</div>${t}</button>`;
-function shell(){$('#app').innerHTML=`<header><h1>💙 SehatKu</h1><div class="row"><button class="av" onclick="prof()" aria-label="Profil" ${avs()}>${S.u.fotoData?'':esc(S.u.nama[0]||'?')}</button><button class="lk" onclick="out()">Keluar</button></div></header><div id="main"></div>
-<nav>${nb('dash','🏠','Beranda')}${nb('med','🩺','Medis')}<button class="fab" onclick="pick()" aria-label="Rekam Data">+</button>${nb('wo','🏃','Workout')}${S.u.role=='admin'?nb('adm','🛡️','Admin'):''}</nav>`}
+const IP={h:'<path d="M3 11l9-8 9 8M5 10v10h5v-6h4v6h5V10"/>',m:'<path d="M12 21s-7.5-4.5-7.5-10.5A4.3 4.3 0 0112 8a4.3 4.3 0 017.5 2.5C19.5 16.5 12 21 12 21z"/>',w:'<path d="M3 12h4l3-8 4 16 3-8h4"/>',a:'<path d="M12 3l8 3v6c0 5-3.5 8-8 9-4.5-1-8-4-8-9V6z"/>'};
+const IC=Object.fromEntries(Object.entries(IP).map(([k,v])=>[k,`<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round">${v}</svg>`]));
+function scoreCard(l,f){if(!l)return'';const s=wkStats(),nf=Object.values(f).filter(Boolean).length,sk=Math.max(0,Math.round(100-12*nf-20*(1-Math.min(1,s.mc/s.tg)))),lb=sk>=80?'Baik':sk>=60?'Cukup':'Perlu perhatian',C=2*Math.PI*44;
+ return`<div class="c"><div class="row"><div><b>Skor Kesehatan</b><div style="margin-top:14px"><span style="font-size:44px;font-weight:700;line-height:1">${sk}</span><span class="m"> /100</span></div><b style="color:${sk>=80?'#12875a':sk>=60?'#b8860b':'#d33'}">${lb}</b></div>
+<svg width="116" height="116" viewBox="0 0 116 116"><defs><linearGradient id="gg" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#ecc96b"/><stop offset="1" stop-color="#d09a12"/></linearGradient></defs><circle cx="58" cy="58" r="44" fill="none" stroke="#e8edf8" stroke-width="12"/><circle cx="58" cy="58" r="44" fill="none" stroke="url(#gg)" stroke-width="12" stroke-linecap="round" stroke-dasharray="${(C*sk/100).toFixed(1)} ${C.toFixed(1)}" transform="rotate(-90 58 58)"/><svg x="46" y="46" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#12285a" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round">${IP.m}</svg></svg></div>
+<p class="m">Skor indikatif dari indikator terakhir dan progres workout; bukan diagnosis.</p></div>`}
+const nb=(k,i,t)=>`<button data-k="${k}" onclick="S.tab='${k}';show()">${i}<span>${t}</span></button>`;
+function shell(){$('#app').innerHTML=`<header><div class="row" style="gap:10px"><span class="orb"></span><h1>SehatKu</h1></div><div class="row"><button class="av" onclick="prof()" aria-label="Profil" ${avs()}>${S.u.fotoData?'':esc(S.u.nama[0]||'?')}</button><button class="lk" onclick="out()">Keluar</button></div></header><div id="main"></div>
+<nav>${nb('dash',IC.h,'Beranda')}${nb('med',IC.m,'Medis')}<button class="fab" onclick="pick()" aria-label="Rekam Data">+</button>${nb('wo',IC.w,'Workout')}${S.u.role=='admin'?nb('adm',IC.a,'Admin'):''}</nav>`}
 async function show(){document.querySelectorAll('nav button[data-k]').forEach(b=>b.classList.toggle('on',b.dataset.k==S.tab));
  const m=$('#main');m.innerHTML='<div class="sk"></div><div class="sk"></div>';
  try{m.innerHTML=await V[S.tab]()}catch(x){m.innerHTML=`<div class="empty">${esc(x)}</div>`}}
@@ -105,7 +123,8 @@ dash(){const ym=today().slice(0,7),belum=!S.med.some(x=>x.tanggal.slice(0,7)==ym
  const vl=l?{gula:has(l.gula)?l.gula+' mg/dL':'–',td:has(l.sis)||has(l.dia)?l.sis+'/'+l.dia:'–',au:has(l.asamUrat)?l.asamUrat:'–',kol:has(l.kolesterol)?l.kolesterol:'–'}:{};
  const tr={gula:'gula',td:'sis',au:'asamUrat',kol:'kolesterol'};
  const rc=Object.keys(f).filter(k=>f[k]).map(k=>REC[k]);if(min<(u.target||150))rc.push(`Aktivitas 7 hari terakhir ${min} menit. Targetkan ${u.target||150} menit/minggu.`);
- return`<div class="c"><div class="row"><div><div class="m">Halo,</div><b style="font-size:20px">${esc(u.nama)}</b></div><span class="bd">IMT ${bmi}</span></div></div>
+ return`<div class="hero"><div class="row"><span class="m">Halo, ${esc(String(u.nama).split(' ')[0])} 👋</span><span class="bd">IMT ${bmi}</span></div><h2>Pantau kesehatan<br>Anda hari ini</h2></div>
+<div class="qa"><button onclick="fMed()">${IC.m}<b>Rekam Medis</b><span>Catat hasil check up</span></button><button onclick="fWo()">${IC.w}<b>Rekam Workout</b><span>Catat olahraga</span></button></div>${scoreCard(l,f)}
 ${belum?'<div class="c" style="border-color:#ffd9a8;background:#fff8ee">⏰ Anda belum merekam data medical check up bulan ini. Tekan tombol <b>+</b>.</div>':''}${l?`<div class="g2">${Object.keys(N).map(k=>`<div class="c"><div class="m">${N[k]}</div><b style="font-size:20px">${vl[k]}</b><div>${k in f?badge(f[k]):''}</div>${spark(m.slice(-6).map(x=>has(x[tr[k]])?+x[tr[k]]:null))}</div>`).join('')}</div>`:empty('Belum ada data medical check up.')}
 <div class="c"><h3>Rekomendasi</h3>${rc.length?rc.map(x=>`<p>• ${x}</p>`).join(''):'<p class="m">Semua indikator terakhir normal. Pertahankan!</p>'}</div>
 ${tUser()}${tgtCard(1)}`},
@@ -167,12 +186,12 @@ function ch(n,ks,v,o={}){const u=o.unit||'',ys=v.filter(x=>x!=null);
  pts=v.map((y,i)=>y==null?null:[X(i),Y(y),y]).filter(Boolean),last=pts.at(-1),prev=pts.at(-2),
  d=prev?Math.round((last[2]-prev[2])*10)/10:null,neutral=!o.good||d==0,
  cls=neutral?'':((d>0)==(o.good=='up')?'':'h'),
- bdg=d==null?'<span class="m">Data awal</span>':`<span class="bd ${cls}" ${neutral?'style="background:#eef1ff;color:#5b7cff"':''}>${d>0?'▲ +':d<0?'▼ ':'● '}${d}${u?' '+u:''}</span>`;
+ bdg=d==null?'<span class="m">Data awal</span>':`<span class="bd ${cls}" ${neutral?'style="background:#eef2fb;color:#1d3f8a"':''}>${d>0?'▲ +':d<0?'▼ ':'● '}${d}${u?' '+u:''}</span>`;
  return`<div class="tc"><div class="row"><b>${n}</b>${bdg}</div><svg viewBox="0 0 ${W} ${H}" width="100%" role="img" aria-label="Tren ${esc(n)}">
 ${r!=null?`<line x1="${L-10}" x2="${W-R+10}" y1="${Y(r).toFixed(1)}" y2="${Y(r).toFixed(1)}" stroke="#e8a0a0" stroke-dasharray="4 3"/><text x="${W-R+10}" y="${(Y(r)-3).toFixed(1)}" font-size="9" fill="#d33" text-anchor="end">batas ${r}</text>`:''}
-<polyline fill="none" stroke="#7a6cf5" stroke-width="2.5" stroke-linejoin="round" stroke-linecap="round" points="${pts.map(p=>p[0].toFixed(1)+','+p[1].toFixed(1)).join(' ')}"/>
-${pts.map(p=>`<circle cx="${p[0].toFixed(1)}" cy="${p[1].toFixed(1)}" r="${p==last?5:3.5}" fill="${p==last?'#7a6cf5':'#fff'}" stroke="#7a6cf5" stroke-width="2"/><text x="${p[0].toFixed(1)}" y="${(p[1]-9).toFixed(1)}" font-size="10" text-anchor="middle" fill="#1c2240">${p[2]}</text>`).join('')}
-${ks.map((k,i)=>`<text x="${X(i).toFixed(1)}" y="${H-6}" font-size="10" text-anchor="middle" fill="#7a82a6">${lab(k)}</text>`).join('')}</svg></div>`}
+<polyline fill="none" stroke="#1d3f8a" stroke-width="2.5" stroke-linejoin="round" stroke-linecap="round" points="${pts.map(p=>p[0].toFixed(1)+','+p[1].toFixed(1)).join(' ')}"/>
+${pts.map(p=>`<circle cx="${p[0].toFixed(1)}" cy="${p[1].toFixed(1)}" r="${p==last?5:3.5}" fill="${p==last?'#d9a521':'#fff'}" stroke="#1d3f8a" stroke-width="2"/><text x="${p[0].toFixed(1)}" y="${(p[1]-9).toFixed(1)}" font-size="10" text-anchor="middle" fill="#0f1f3d">${p[2]}</text>`).join('')}
+${ks.map((k,i)=>`<text x="${X(i).toFixed(1)}" y="${H-6}" font-size="10" text-anchor="middle" fill="#6b7794">${lab(k)}</text>`).join('')}</svg></div>`}
 const note='<p class="m">▲/▼ dibanding periode sebelumnya: hijau = membaik, merah = memburuk.</p>';
 function tUser(){const B={},add=(t,x)=>{const k=bkc(S.per,x.tanggal);(B[k]=B[k]||{med:[],wo:[]})[t].push(x)};
  S.med.forEach(x=>add('med',x));S.wo.forEach(x=>add('wo',x));const ks=Object.keys(B).sort().slice(-6);
