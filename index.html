@@ -30,6 +30,8 @@ nav .fab{flex:0 0 60px;width:60px;height:60px;margin-top:-34px;border-radius:50%
 .tab{display:flex;gap:6px;margin:8px 16px}.tab button{flex:1;min-height:44px;border:0;border-radius:12px;background:#eef1ff;color:var(--a);font-weight:600;font-size:14px}.tab .on{background:var(--g);color:#fff}
 .av{width:44px;height:44px;border-radius:50%;border:2px solid #e6eaff;background:var(--g) center/cover;color:#fff;font-weight:700;font-size:18px;cursor:pointer}
 .tt{border-collapse:collapse;font-size:13px;width:100%}.tt td,.tt th{padding:6px 8px;text-align:right;white-space:nowrap}.tt td:first-child,.tt th:first-child{text-align:left;color:var(--m)}.tt tr+tr td{border-top:1px solid #eef1ff}
+.tc{padding:12px 0}.tc+.tc{border-top:1px solid #eef1ff}.tc svg{display:block;margin-top:4px}
+.fn{text-align:center;color:var(--m);font-size:12px;line-height:1.6;margin:8px 16px 0}
 </style></head><body><div id="app"></div>
 <script>
 const API='https://script.google.com/macros/s/AKfycbyncBaRg4Lv4t6uKYW2xhwsnS5FXcmsoDEO8mGRvCgtJOJnLPJoj5OlAQevUQAFO4tlUg/exec';
@@ -62,7 +64,7 @@ function auth(){const r=S.reg;$('#app').innerHTML=`<div class="c" style="margin-
 ${F('email','Email','','email','required')}${F('password','Kata sandi (min. 6 karakter)','','password','required')}
 ${r?'<label style="display:flex;gap:10px;align-items:center"><input type="checkbox" required style="width:24px;min-height:24px;margin:0">Saya setuju data kesehatan saya dipakai kantor secara agregat dan anonim.</label>':''}
 <button class="btn">${r?'Daftar':'Masuk'}</button></form>
-<button class="btn s" onclick="S.reg=!S.reg;auth()">${r?'Sudah punya akun? Masuk':'Belum punya akun? Daftar'}</button>${r?'':'<button type="button" class="lk" style="display:block;margin:14px auto 0" onclick="fForgot()">Lupa kata sandi?</button>'}</div>`}
+<button class="btn s" onclick="S.reg=!S.reg;auth()">${r?'Sudah punya akun? Masuk':'Belum punya akun? Daftar'}</button>${r?'':'<button type="button" class="lk" style="display:block;margin:14px auto 0" onclick="fForgot()">Lupa kata sandi?</button>'}</div><div class="fn">SehatKu v.1.0<br>Kantor Wilayah DJPb Provinsi Lampung<br>2026</div><p class="m" style="text-align:center;margin:0 0 24px;font-size:12px">SehatKu v.1.0</p>`}
 async function doAuth(e){e.preventDefault();const b=e.target.querySelector('button');b.disabled=1;b.textContent='Memproses…';
  try{const d=await api(S.reg?'register':'login',val(e.target));S.t=localStorage.t=d.token;await boot()}
  catch(x){toast(x);b.disabled=0;b.textContent=S.reg?'Daftar':'Masuk'}}
@@ -151,16 +153,39 @@ const bkc=(per,d)=>{const y=d.slice(0,4),m=+d.slice(5,7);return per=='tahun'?y:p
 const avg=a=>{a=a.filter(has);return a.length?Math.round(a.reduce((s,x)=>s+ +x,0)/a.length*10)/10:null};
 const PER=[['bulan','Bulanan'],['tri','Triwulan'],['sem','Semester'],['tahun','Tahunan']];
 const perTab=()=>`<div class="tab" style="margin:0 0 8px">${PER.map(([k,n])=>`<button class="${S.per==k?'on':''}" onclick="S.per='${k}';show()">${n}</button>`).join('')}</div>`;
-const tbl=(ks,R)=>`<div style="overflow-x:auto"><table class="tt"><tr><th></th>${ks.map(k=>`<th>${lab(k)}</th>`).join('')}<th></th></tr>${R.map(([n,v])=>`<tr><td>${n}</td>${v.map(x=>`<td>${x??'–'}</td>`).join('')}<td>${spark(v,60,24)}</td></tr>`).join('')}</table></div>`;
+/* Trendline chart per indikator: o={unit,ref,good:'up'|'down'} */
+function ch(n,ks,v,o={}){const u=o.unit||'',ys=v.filter(x=>x!=null);
+ if(!ys.length)return`<div class="tc"><div class="row"><b>${n}</b><span class="m">Belum ada data</span></div></div>`;
+ const W=300,H=120,L=26,R=26,T=18,B=22,r=o.ref,lo0=Math.min(...ys,r??Infinity),hi0=Math.max(...ys,r??-Infinity),pad=(hi0-lo0||1)*.15,lo=lo0-pad,hi=hi0+pad,
+ X=i=>L+(ks.length>1?i/(ks.length-1):.5)*(W-L-R),Y=y=>T+(1-(y-lo)/(hi-lo))*(H-T-B),
+ pts=v.map((y,i)=>y==null?null:[X(i),Y(y),y]).filter(Boolean),last=pts.at(-1),prev=pts.at(-2),
+ d=prev?Math.round((last[2]-prev[2])*10)/10:null,neutral=!o.good||d==0,
+ cls=neutral?'':((d>0)==(o.good=='up')?'':'h'),
+ bdg=d==null?'<span class="m">Data awal</span>':`<span class="bd ${cls}" ${neutral?'style="background:#eef1ff;color:#5b7cff"':''}>${d>0?'▲ +':d<0?'▼ ':'● '}${d}${u?' '+u:''}</span>`;
+ return`<div class="tc"><div class="row"><b>${n}</b>${bdg}</div><svg viewBox="0 0 ${W} ${H}" width="100%" role="img" aria-label="Tren ${esc(n)}">
+${r!=null?`<line x1="${L-10}" x2="${W-R+10}" y1="${Y(r).toFixed(1)}" y2="${Y(r).toFixed(1)}" stroke="#e8a0a0" stroke-dasharray="4 3"/><text x="${W-R+10}" y="${(Y(r)-3).toFixed(1)}" font-size="9" fill="#d33" text-anchor="end">batas ${r}</text>`:''}
+<polyline fill="none" stroke="#7a6cf5" stroke-width="2.5" stroke-linejoin="round" stroke-linecap="round" points="${pts.map(p=>p[0].toFixed(1)+','+p[1].toFixed(1)).join(' ')}"/>
+${pts.map(p=>`<circle cx="${p[0].toFixed(1)}" cy="${p[1].toFixed(1)}" r="${p==last?5:3.5}" fill="${p==last?'#7a6cf5':'#fff'}" stroke="#7a6cf5" stroke-width="2"/><text x="${p[0].toFixed(1)}" y="${(p[1]-9).toFixed(1)}" font-size="10" text-anchor="middle" fill="#1c2240">${p[2]}</text>`).join('')}
+${ks.map((k,i)=>`<text x="${X(i).toFixed(1)}" y="${H-6}" font-size="10" text-anchor="middle" fill="#7a82a6">${lab(k)}</text>`).join('')}</svg></div>`}
+const note='<p class="m">▲/▼ dibanding periode sebelumnya: hijau = membaik, merah = memburuk.</p>';
 function tUser(){const B={},add=(t,x)=>{const k=bkc(S.per,x.tanggal);(B[k]=B[k]||{med:[],wo:[]})[t].push(x)};
  S.med.forEach(x=>add('med',x));S.wo.forEach(x=>add('wo',x));const ks=Object.keys(B).sort().slice(-6);
- if(!ks.length)return'';
- const R=[['Gula puasa',b=>avg(b.med.filter(x=>x.jenisGula=='puasa').map(x=>x.gula))],['Sistolik',b=>avg(b.med.map(x=>x.sis))],['Diastolik',b=>avg(b.med.map(x=>x.dia))],['Asam urat',b=>avg(b.med.map(x=>x.asamUrat))],['Kolesterol',b=>avg(b.med.map(x=>x.kolesterol))],['Workout (mnt)',b=>b.wo.reduce((s,x)=>s+(+x.durasi||0),0)||null],['Sesi workout',b=>b.wo.length||null],['Rata² detak jantung',b=>avg(b.wo.map(x=>x.hr))]];
- return`<div class="c"><h3>Tren Saya</h3>${perTab()}${tbl(ks,R.map(([n,f])=>[n,ks.map(k=>f(B[k]))]))}<p class="m">Rata-rata per periode; workout berupa total.</p></div>`}
+ if(!ks.length)return'';const c=S.c,au=S.u.gender=='Perempuan'?c.au_wanita:c.au_pria;
+ const R=[['Gula darah puasa',b=>avg(b.med.filter(x=>x.jenisGula=='puasa').map(x=>x.gula)),{unit:'mg/dL',ref:c.gula_puasa,good:'down'}],
+ ['Tekanan sistolik',b=>avg(b.med.map(x=>x.sis)),{unit:'mmHg',ref:c.sis,good:'down'}],
+ ['Tekanan diastolik',b=>avg(b.med.map(x=>x.dia)),{unit:'mmHg',ref:c.dia,good:'down'}],
+ ['Asam urat',b=>avg(b.med.map(x=>x.asamUrat)),{unit:'mg/dL',ref:au,good:'down'}],
+ ['Kolesterol total',b=>avg(b.med.map(x=>x.kolesterol)),{unit:'mg/dL',ref:c.kol,good:'down'}],
+ ['Total menit workout',b=>b.wo.reduce((s,x)=>s+(+x.durasi||0),0)||null,{unit:'mnt',good:'up'}],
+ ['Sesi workout',b=>b.wo.length||null,{good:'up'}],
+ ['Rata-rata detak jantung',b=>avg(b.wo.map(x=>x.hr)),{unit:'bpm'}]];
+ return`<div class="c"><h3>Tren Saya</h3>${perTab()}${R.map(([n,f,o])=>ch(n,ks,ks.map(k=>f(B[k])),o)).join('')}<p class="m">Garis putus-putus = batas normal.</p>${note}</div>`}
 function tAdm(d){const T=Object.fromEntries(d.tren.map(x=>[x.b,x])),W=Object.fromEntries(d.woTren.map(x=>[x.b,x])),ks=[...new Set([...Object.keys(T),...Object.keys(W)])].sort().slice(-6);
  if(!ks.length)return'';const ok=(o,f)=>ks.map(b=>o[b]&&!o[b].min?f(o[b]):null);
- const R=[...Object.keys(N).map(k=>[N[k]+' (% di atas normal)',ok(T,x=>P(x[k]))]),['Pegawai merekam medis',ok(T,x=>x.n)],['Pegawai aktif workout',ok(W,x=>x.aktif)],['Sesi workout',ok(W,x=>x.sesi)],['Total menit workout',ok(W,x=>x.menit)]];
- return`<div class="c"><h3>Tren Agregat</h3>${perTab()}${tbl(ks,R)}<p class="m">Periode dengan kurang dari 5 pegawai disembunyikan (–).</p></div>`}
+ const R=[...Object.keys(N).map(k=>[N[k]+': % pegawai di atas normal',ok(T,x=>P(x[k])),{unit:'%',good:'down'}]),
+ ['Pegawai merekam data medis',ok(T,x=>x.n),{}],['Pegawai aktif workout',ok(W,x=>x.aktif),{good:'up'}],
+ ['Total sesi workout',ok(W,x=>x.sesi),{good:'up'}],['Total menit workout',ok(W,x=>x.menit),{unit:'mnt',good:'up'}]];
+ return`<div class="c"><h3>Tren Agregat</h3>${perTab()}${R.map(([n,v,o])=>ch(n,ks,v,o)).join('')}<p class="m">Periode dengan kurang dari 5 pegawai disembunyikan.</p>${note}</div>`}
 
 /* ---------- Lupa kata sandi ---------- */
 function fForgot(){cl();const d=sheet(`<h3>Lupa Kata Sandi</h3><p class="m">Masukkan email akun Anda. Kami kirim kode 6 digit ke email tersebut.</p><form>${F('email','Email','','email','required')}<button class="btn">Kirim Kode</button></form><p class="m">Email tidak masuk? Cek folder spam, atau hubungi admin untuk reset manual.</p>`);
