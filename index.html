@@ -74,7 +74,7 @@ const fl=(m,g,c)=>{const f={};
 const badge=h=>`<span class="bd ${h?'h':''}">${h?'Di atas normal':'Normal'}</span>`;
 
 /* ---------- Auth ---------- */
-function auth(){const r=S.reg;$('#app').innerHTML=`<div class="c" style="margin-top:8vh;text-align:center"><img src="logo.png" alt="SigerFit" style="width:min(72%,260px);height:auto;mix-blend-mode:multiply"><p class="m">${r?'Buat akun pegawai':'Masuk untuk mencatat kesehatan Anda'}</p>
+function auth(){const r=S.reg;$('#app').innerHTML=`<div class="c" style="margin-top:8vh;text-align:center"><img src="logo.png" alt="SigerFit" style="display:block;width:min(48%,150px);height:auto;margin:6px auto 2px;mix-blend-mode:multiply"><p class="m">${r?'Buat akun pegawai':'Masuk untuk mencatat kesehatan Anda'}</p>
 <form onsubmit="doAuth(event)">${r?F('nama','Nama lengkap','','text','required')+F('umur','Umur (tahun)','','number','required')+SEL('gender','Jenis kelamin',[['Laki-laki','Laki-laki'],['Perempuan','Perempuan']])+F('bb','Berat badan (kg)')+F('tb','Tinggi badan (cm)')+(S.units&&S.units.length?SEL('unit','Unit kerja',[['','Pilih unit…'],...S.units.map(x=>[x,x])]):'')+F('riwayat','Riwayat penyakit bawaan (jika ada)','','text'):''}
 ${F('email','Email','','email','required')}${F('password','Kata sandi (min. 6 karakter)','','password','required')}
 ${r?'<label style="display:flex;gap:10px;align-items:center"><input type="checkbox" required style="width:24px;min-height:24px;margin:0">Saya setuju data kesehatan saya dipakai kantor secara agregat dan anonim.</label>':''}
