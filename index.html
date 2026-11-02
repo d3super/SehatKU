@@ -47,6 +47,12 @@ nav .fab{width:60px;height:60px;min-width:60px;padding:0;margin-top:-34px;border
 .qa{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin:16px}
 .qa button{text-align:left;display:flex;flex-direction:column;gap:2px;padding:16px;color:var(--t);background:rgba(255,255,255,.75);backdrop-filter:blur(12px);border:1px solid #e3e9f5;border-radius:22px;box-shadow:0 8px 24px rgba(15,37,87,.08);min-height:96px}
 .qa svg{color:var(--gold);margin-bottom:8px}.qa span{font-size:12px;color:var(--m)}
+nav{justify-content:center;gap:0}
+.ng{flex:1;min-width:0;display:flex;justify-content:space-around;align-items:center}
+nav .fab{flex:0 0 60px;margin:-34px 6px 0}
+nav button{padding:0;width:48px}
+nav button.on{padding:0;width:48px}nav button.on span{display:none}
+@media(min-width:400px){nav button.on{width:auto;padding:0 14px}nav button.on span{display:inline}}
 </style></head><body><div id="app"></div>
 <script>
 const API='https://script.google.com/macros/s/AKfycbyncBaRg4Lv4t6uKYW2xhwsnS5FXcmsoDEO8mGRvCgtJOJnLPJoj5OlAQevUQAFO4tlUg/exec';
@@ -86,7 +92,7 @@ async function doAuth(e){e.preventDefault();const b=e.target.querySelector('butt
 function out(){localStorage.removeItem('t');localStorage.removeItem('bd');S.t=null;S.u=null;auth()}
 
 /* ---------- Shell ---------- */
-const IP={h:'<path d="M3 11l9-8 9 8M5 10v10h5v-6h4v6h5V10"/>',m:'<path d="M12 21s-7.5-4.5-7.5-10.5A4.3 4.3 0 0112 8a4.3 4.3 0 017.5 2.5C19.5 16.5 12 21 12 21z"/>',w:'<path d="M3 12h4l3-8 4 16 3-8h4"/>',a:'<path d="M12 3l8 3v6c0 5-3.5 8-8 9-4.5-1-8-4-8-9V6z"/>'};
+const IP={h:'<path d="M3 11l9-8 9 8M5 10v10h5v-6h4v6h5V10"/>',m:'<path d="M12 21s-7.5-4.5-7.5-10.5A4.3 4.3 0 0112 8a4.3 4.3 0 017.5 2.5C19.5 16.5 12 21 12 21z"/>',w:'<path d="M3 12h4l3-8 4 16 3-8h4"/>',a:'<path d="M12 3l8 3v6c0 5-3.5 8-8 9-4.5-1-8-4-8-9V6z"/>',u:'<circle cx="12" cy="8" r="4"/><path d="M4 21c0-4 3.5-6 8-6s8 2 8 6"/>'};
 const IC=Object.fromEntries(Object.entries(IP).map(([k,v])=>[k,`<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round">${v}</svg>`]));
 function scoreCard(l,f){if(!l)return'';const s=wkStats(),nf=Object.values(f).filter(Boolean).length,sk=Math.max(0,Math.round(100-12*nf-20*(1-Math.min(1,s.mc/s.tg)))),lb=sk>=80?'Baik':sk>=60?'Cukup':'Perlu perhatian',C=2*Math.PI*44;
  return`<div class="c"><div class="row"><div><b>Skor Kesehatan</b><div style="margin-top:14px"><span style="font-size:44px;font-weight:700;line-height:1">${sk}</span><span class="m"> /100</span></div><b style="color:${sk>=80?'#12875a':sk>=60?'#b8860b':'#d33'}">${lb}</b></div>
@@ -94,7 +100,7 @@ function scoreCard(l,f){if(!l)return'';const s=wkStats(),nf=Object.values(f).fil
 <p class="m">Skor indikatif dari indikator terakhir dan progres workout; bukan diagnosis.</p></div>`}
 const nb=(k,i,t)=>`<button data-k="${k}" onclick="S.tab='${k}';show()">${i}<span>${t}</span></button>`;
 function shell(){$('#app').innerHTML=`<header><div class="row" style="gap:10px"><img src="icon-192.png" alt="" width="34" height="34" style="border-radius:10px"><h1>SigerFit</h1></div><div class="row"><button class="av" onclick="prof()" aria-label="Profil" ${avs()}>${S.u.fotoData?'':esc(S.u.nama[0]||'?')}</button><button class="lk" onclick="out()">Keluar</button></div></header><div id="main"></div>
-<nav>${nb('dash',IC.h,'Beranda')}${nb('med',IC.m,'Medis')}<button class="fab" onclick="pick()" aria-label="Rekam Data">+</button>${nb('wo',IC.w,'Workout')}${S.u.role=='admin'?nb('adm',IC.a,'Admin'):''}</nav>`}
+<nav><div class="ng">${nb('dash',IC.h,'Beranda')}${nb('med',IC.m,'Medis')}</div><button class="fab" onclick="pick()" aria-label="Rekam Data" title="Rekam Data">+</button><div class="ng">${nb('wo',IC.w,'Workout')}${S.u.role=='admin'?nb('adm',IC.a,'Admin'):`<button onclick="prof()" aria-label="Profil">${IC.u}<span>Profil</span></button>`}</div></nav>`}
 async function show(){document.querySelectorAll('nav button[data-k]').forEach(b=>b.classList.toggle('on',b.dataset.k==S.tab));
  const m=$('#main');m.innerHTML='<div class="sk"></div><div class="sk"></div>';
  try{m.innerHTML=await V[S.tab]()}catch(x){m.innerHTML=`<div class="empty">${esc(x)}</div>`}}
