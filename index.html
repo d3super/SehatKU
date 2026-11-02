@@ -32,10 +32,13 @@ nav .fab{flex:0 0 60px;width:60px;height:60px;margin-top:-34px;border-radius:50%
 .tt{border-collapse:collapse;font-size:13px;width:100%}.tt td,.tt th{padding:6px 8px;text-align:right;white-space:nowrap}.tt td:first-child,.tt th:first-child{text-align:left;color:var(--m)}.tt tr+tr td{border-top:1px solid #eef1ff}
 .tc{padding:12px 0}.tc+.tc{border-top:1px solid #eef1ff}.tc svg{display:block;margin-top:4px}
 .fn{text-align:center;color:var(--m);font-size:12px;line-height:1.6;margin:8px 16px 0}
+.g3{display:grid;gap:8px;margin-top:6px}.prt{display:none}
+@media print{nav,header,.tab,.noprint,.ov,.toast{display:none!important}body{padding:0;background:#fff}.c{box-shadow:none;break-inside:avoid;backdrop-filter:none}.prt{display:block;margin:16px;font-weight:700}}
+.bgs{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:12px}.bgd{text-align:center;padding:10px 4px;border-radius:14px;background:#f3f0ff;font-size:12px}.bgd.off{opacity:.35;filter:grayscale(1)}
 </style></head><body><div id="app"></div>
 <script>
 const API='https://script.google.com/macros/s/AKfycbyncBaRg4Lv4t6uKYW2xhwsnS5FXcmsoDEO8mGRvCgtJOJnLPJoj5OlAQevUQAFO4tlUg/exec';
-const $=s=>document.querySelector(s),S={t:localStorage.t,tab:'dash',sub:'umum',per:'bulan',med:[],wo:[],reg:false};
+const $=s=>document.querySelector(s),S={t:localStorage.t,tab:'dash',sub:'umum',per:'bulan',fl:{unit:'',gender:'',age:''},med:[],wo:[],reg:false};
 const N={gula:'Gula darah',td:'Tekanan darah',au:'Asam urat',kol:'Kolesterol'};
 const REC={gula:'Kurangi gula & karbohidrat sederhana, perbanyak serat, dan ulangi cek gula darah.',td:'Kurangi garam, kelola stres, tidur cukup, dan pantau tekanan darah rutin.',au:'Kurangi jeroan, seafood tertentu & minuman manis; perbanyak minum air putih.',kol:'Kurangi gorengan & lemak jenuh; perbanyak sayur, buah, dan olahraga.'};
 const OBAT={gula:'antidiabetik & strip/alat cek gula darah',td:'antihipertensi & tensimeter',au:'obat penurun asam urat & pereda nyeri sendi',kol:'obat/suplemen penurun kolesterol'};
@@ -60,15 +63,15 @@ const badge=h=>`<span class="bd ${h?'h':''}">${h?'Di atas normal':'Normal'}</spa
 
 /* ---------- Auth ---------- */
 function auth(){const r=S.reg;$('#app').innerHTML=`<div class="c" style="margin-top:8vh"><h1>💙 SehatKu</h1><p class="m">${r?'Buat akun pegawai':'Masuk untuk mencatat kesehatan Anda'}</p>
-<form onsubmit="doAuth(event)">${r?F('nama','Nama lengkap','','text','required')+F('umur','Umur (tahun)','','number','required')+SEL('gender','Jenis kelamin',[['Laki-laki','Laki-laki'],['Perempuan','Perempuan']])+F('bb','Berat badan (kg)')+F('tb','Tinggi badan (cm)')+F('riwayat','Riwayat penyakit bawaan (jika ada)','','text'):''}
+<form onsubmit="doAuth(event)">${r?F('nama','Nama lengkap','','text','required')+F('umur','Umur (tahun)','','number','required')+SEL('gender','Jenis kelamin',[['Laki-laki','Laki-laki'],['Perempuan','Perempuan']])+F('bb','Berat badan (kg)')+F('tb','Tinggi badan (cm)')+(S.units&&S.units.length?SEL('unit','Unit kerja',[['','Pilih unit…'],...S.units.map(x=>[x,x])]):'')+F('riwayat','Riwayat penyakit bawaan (jika ada)','','text'):''}
 ${F('email','Email','','email','required')}${F('password','Kata sandi (min. 6 karakter)','','password','required')}
 ${r?'<label style="display:flex;gap:10px;align-items:center"><input type="checkbox" required style="width:24px;min-height:24px;margin:0">Saya setuju data kesehatan saya dipakai kantor secara agregat dan anonim.</label>':''}
 <button class="btn">${r?'Daftar':'Masuk'}</button></form>
-<button class="btn s" onclick="S.reg=!S.reg;auth()">${r?'Sudah punya akun? Masuk':'Belum punya akun? Daftar'}</button>${r?'':'<button type="button" class="lk" style="display:block;margin:14px auto 0" onclick="fForgot()">Lupa kata sandi?</button>'}</div><div class="fn">SehatKu v.1.0<br>Kantor Wilayah DJPb Provinsi Lampung<br>2026</div><p class="m" style="text-align:center;margin:0 0 24px;font-size:12px">SehatKu v.1.0</p>`}
+<button class="btn s" onclick="toReg()">${r?'Sudah punya akun? Masuk':'Belum punya akun? Daftar'}</button>${r?'':'<button type="button" class="lk" style="display:block;margin:14px auto 0" onclick="fForgot()">Lupa kata sandi?</button>'}</div><div class="fn">SehatKu v.1.0<br>Kantor Wilayah DJPb Provinsi Lampung<br>2026</div><p class="m" style="text-align:center;margin:0 0 24px;font-size:12px">SehatKu v.1.0</p>`}
 async function doAuth(e){e.preventDefault();const b=e.target.querySelector('button');b.disabled=1;b.textContent='Memproses…';
  try{const d=await api(S.reg?'register':'login',val(e.target));S.t=localStorage.t=d.token;await boot()}
  catch(x){toast(x);b.disabled=0;b.textContent=S.reg?'Daftar':'Masuk'}}
-function out(){localStorage.removeItem('t');S.t=null;auth()}
+function out(){localStorage.removeItem('t');localStorage.removeItem('bd');S.t=null;S.u=null;auth()}
 
 /* ---------- Shell ---------- */
 const nb=(k,i,t)=>`<button data-k="${k}" onclick="S.tab='${k}';show()"><div>${i}</div>${t}</button>`;
@@ -77,11 +80,13 @@ function shell(){$('#app').innerHTML=`<header><h1>💙 SehatKu</h1><div class="r
 async function show(){document.querySelectorAll('nav button[data-k]').forEach(b=>b.classList.toggle('on',b.dataset.k==S.tab));
  const m=$('#main');m.innerHTML='<div class="sk"></div><div class="sk"></div>';
  try{m.innerHTML=await V[S.tab]()}catch(x){m.innerHTML=`<div class="empty">${esc(x)}</div>`}}
-async function boot(){try{const d=await api('boot');Object.assign(S,{u:d.user,c:d.cfg,med:d.med,wo:d.wo});shell();show();if(S.u.wajib)force()}catch(x){S.t?toast(x):auth()}}
+async function boot(){try{if(!S.u&&localStorage.bd){try{const o=JSON.parse(localStorage.bd);if(S.t&&S.t.split('.')[0]==o.u.id){Object.assign(S,o);shell();show()}}catch(e){}}
+ const d=await api('boot');Object.assign(S,{u:d.user,c:d.cfg,units:d.units,med:d.med,wo:d.wo});try{localStorage.bd=JSON.stringify({u:S.u,c:S.c,units:S.units,med:S.med,wo:S.wo})}catch(e){}shell();show();if(S.u.wajib)force()}catch(x){S.t?toast(x):auth()}}
 function pick(){sheet(`<h3>Rekam Data</h3><button class="btn" onclick="cl();fMed()">🩺 Medical Check Up</button><button class="btn s" onclick="cl();fWo()">🏃 Workout</button>`)}
 function save(d,a,id){d.querySelector('form').onsubmit=async e=>{e.preventDefault();const b=e.target.querySelector('button');b.disabled=1;b.textContent='Menyimpan…';
- try{await api(a,{...val(e.target),id});d.remove();toast('Tersimpan ✓');await boot()}catch(x){toast(x);b.disabled=0;b.textContent='Simpan'}}}
+ try{await api(a,{...val(e.target),id});d.remove();toast('Tersimpan ✓');const w=a=='saveMed'?crit(val(e.target)):[];if(w.length)warn(w);await boot()}catch(x){toast(x);b.disabled=0;b.textContent='Simpan'}}}
 function fMed(m={}){save(sheet(`<h3>${m.id?'Ubah':'Rekam'} Medical Check Up</h3><form>${F('tanggal','Tanggal',m.tanggal||today(),'date','required')}
+${F('bb','Berat badan (kg)',m.bb)}
 ${SEL('jenisGula','Jenis pengukuran gula darah',[['puasa','Puasa'],['2jam','2 jam setelah makan'],['sewaktu','Sewaktu']],m.jenisGula)}
 ${F('gula','Gula darah (mg/dL)',m.gula)}${F('sis','Tekanan darah sistolik (mmHg)',m.sis)}${F('dia','Tekanan darah diastolik (mmHg)',m.dia)}
 ${F('asamUrat','Asam urat (mg/dL)',m.asamUrat)}${F('kolesterol','Kolesterol total (mg/dL)',m.kolesterol)}${F('catatan','Catatan',m.catatan,'text')}
@@ -95,35 +100,36 @@ async function del(k,id){if(!confirm('Hapus data ini?'))return;try{await api('de
 /* ---------- Views pegawai ---------- */
 const empty=t=>`<div class="empty">${t}<br>Tekan tombol <b>+</b> untuk merekam.</div>`;
 const V={
-dash(){const m=[...S.med].sort(by),l=m.at(-1),u=S.u,f=l?fl(l,u.gender,S.c):{},bmi=u.bb&&u.tb?(u.bb/(u.tb/100)**2).toFixed(1):'–';
+dash(){const ym=today().slice(0,7),belum=!S.med.some(x=>x.tanggal.slice(0,7)==ym),m=[...S.med].sort(by),l=m.at(-1),u=S.u,f=l?fl(l,u.gender,S.c):{},bmi=u.bb&&u.tb?(u.bb/(u.tb/100)**2).toFixed(1):'–';
  const d7=new Date(Date.now()-7*864e5).toLocaleDateString('sv'),w=S.wo.filter(x=>x.tanggal>=d7),min=w.reduce((s,x)=>s+(+x.durasi||0),0);
  const vl=l?{gula:has(l.gula)?l.gula+' mg/dL':'–',td:has(l.sis)||has(l.dia)?l.sis+'/'+l.dia:'–',au:has(l.asamUrat)?l.asamUrat:'–',kol:has(l.kolesterol)?l.kolesterol:'–'}:{};
  const tr={gula:'gula',td:'sis',au:'asamUrat',kol:'kolesterol'};
- const rc=Object.keys(f).filter(k=>f[k]).map(k=>REC[k]);if(min<150)rc.push(`Aktivitas 7 hari terakhir ${min} menit. Targetkan 150 menit/minggu.`);
+ const rc=Object.keys(f).filter(k=>f[k]).map(k=>REC[k]);if(min<(u.target||150))rc.push(`Aktivitas 7 hari terakhir ${min} menit. Targetkan ${u.target||150} menit/minggu.`);
  return`<div class="c"><div class="row"><div><div class="m">Halo,</div><b style="font-size:20px">${esc(u.nama)}</b></div><span class="bd">IMT ${bmi}</span></div></div>
-${l?`<div class="g2">${Object.keys(N).map(k=>`<div class="c"><div class="m">${N[k]}</div><b style="font-size:20px">${vl[k]}</b><div>${k in f?badge(f[k]):''}</div>${spark(m.slice(-6).map(x=>has(x[tr[k]])?+x[tr[k]]:null))}</div>`).join('')}</div>`:empty('Belum ada data medical check up.')}
+${belum?'<div class="c" style="border-color:#ffd9a8;background:#fff8ee">⏰ Anda belum merekam data medical check up bulan ini. Tekan tombol <b>+</b>.</div>':''}${l?`<div class="g2">${Object.keys(N).map(k=>`<div class="c"><div class="m">${N[k]}</div><b style="font-size:20px">${vl[k]}</b><div>${k in f?badge(f[k]):''}</div>${spark(m.slice(-6).map(x=>has(x[tr[k]])?+x[tr[k]]:null))}</div>`).join('')}</div>`:empty('Belum ada data medical check up.')}
 <div class="c"><h3>Rekomendasi</h3>${rc.length?rc.map(x=>`<p>• ${x}</p>`).join(''):'<p class="m">Semua indikator terakhir normal. Pertahankan!</p>'}</div>
-${tUser()}<div class="c"><div class="row"><b>Workout 7 hari</b><b>${min} mnt</b></div><div class="bar"><i style="width:${Math.min(100,min/1.5)}%"></i></div><div class="m">${w.length} sesi · ${w.reduce((s,x)=>s+(+x.kalori||0),0)} kkal · target 150 mnt</div></div>`},
+${tUser()}${tgtCard(1)}`},
 med(){const l=[...S.med].sort(by).reverse();if(!l.length)return empty('Belum ada rekaman medical check up.');
  return l.map(x=>{const f=fl(x,S.u.gender,S.c);return`<div class="c"><div class="row"><b>${esc(x.tanggal)}</b><span><button class="lk" onclick="fMed(S.med.find(z=>z.id=='${x.id}'))">Ubah</button> <button class="lk" onclick="del('Med','${x.id}')">Hapus</button></span></div>
-${[['gula','Gula darah'+(has(x.gula)?' ('+x.jenisGula+')':''),has(x.gula)&&x.gula],['td','Tekanan darah',(has(x.sis)||has(x.dia))&&x.sis+'/'+x.dia],['au','Asam urat',has(x.asamUrat)&&x.asamUrat],['kol','Kolesterol',has(x.kolesterol)&&x.kolesterol]].filter(i=>i[2]).map(i=>`<div class="row"><span class="m">${i[1]}</span><span>${esc(i[2])} ${badge(f[i[0]])}</span></div>`).join('')}</div>`}).join('')},
-wo(){const l=[...S.wo].sort(by).reverse();if(!l.length)return empty('Belum ada rekaman workout.');
- return l.map(x=>`<div class="c"><div class="row"><b>${esc(x.jenis)} · ${esc(x.tanggal)}</b><span><button class="lk" onclick="fWo(S.wo.find(z=>z.id=='${x.id}'))">Ubah</button> <button class="lk" onclick="del('Wo','${x.id}')">Hapus</button></span></div>
+${[['gula','Gula darah'+(has(x.gula)?' ('+x.jenisGula+')':''),has(x.gula)&&x.gula],['td','Tekanan darah',(has(x.sis)||has(x.dia))&&x.sis+'/'+x.dia],['bb','Berat badan',has(x.bb)&&x.bb+' kg'],['au','Asam urat',has(x.asamUrat)&&x.asamUrat],['kol','Kolesterol',has(x.kolesterol)&&x.kolesterol]].filter(i=>i[2]).map(i=>`<div class="row"><span class="m">${i[1]}</span><span>${esc(i[2])} ${i[0]=='bb'?'':badge(f[i[0]])}</span></div>`).join('')}</div>`}).join('')},
+async wo(){const l=[...S.wo].sort(by).reverse(),top=tgtCard()+await chSec();if(!l.length)return top+empty('Belum ada rekaman workout.');
+ return top+l.map(x=>`<div class="c"><div class="row"><b>${esc(x.jenis)} · ${esc(x.tanggal)}</b><span><button class="lk" onclick="fWo(S.wo.find(z=>z.id=='${x.id}'))">Ubah</button> <button class="lk" onclick="del('Wo','${x.id}')">Hapus</button></span></div>
 <div class="m">${x.durasi||0} menit${has(x.kalori)?' · '+x.kalori+' kkal':''}${has(x.hr)?' · '+x.hr+' bpm':''}</div></div>`).join('')},
-async adm(){return`<div class="tab">${[['umum','Umum'],['ref','Referensi'],['usr','Pengguna']].map(([k,n])=>`<button class="${S.sub==k?'on':''}" onclick="S.sub='${k}';show()">${n}</button>`).join('')}</div>`+await A[S.sub]()}};
+async adm(){return`<div class="tab">${[['umum','Umum'],['ref','Referensi'],['usr','Pengguna'],['tan','Tantangan']].map(([k,n])=>`<button class="${S.sub==k?'on':''}" onclick="S.sub='${k}';show()">${n}</button>`).join('')}</div>`+await A[S.sub]()}};
 
 /* ---------- Views admin ---------- */
 const P=o=>o&&!o.min&&o.n?Math.round(o.h/o.n*100):null;
 const A={
-async umum(){const d=await api('dashAdmin',{per:S.per}),t=d.terbaru;
- if(t.min)return`<div class="empty">Dashboard tampil setelah minimal 5 pegawai merekam data (saat ini ${t.n}).<br>Ini menjaga anonimitas pegawai.</div>`;
+async umum(){const d=S.rep=await api('dashAdmin',{per:S.per,f:S.fl}),t=d.terbaru;
+ if(t.min)return fbar()+`<div class="empty">Dashboard tampil setelah minimal 5 pegawai merekam data (saat ini ${t.n}).<br>Ini menjaga anonimitas pegawai.</div>`;
  const R=Object.keys(N).map(k=>({k,p:P(t[k]),n:t[k].n,tr:d.tren.filter(x=>!x.min).map(x=>P(x[k]))}));
- return`<div class="g2"><div class="c"><div class="m">Terdaftar</div><b style="font-size:22px">${d.pegawai}</b></div><div class="c"><div class="m">Sudah merekam</div><b style="font-size:22px">${t.n}</b></div></div>`+
+ return fbar()+xbar()+`<div class="g2"><div class="c"><div class="m">Terdaftar</div><b style="font-size:22px">${d.pegawai}</b></div><div class="c"><div class="m">Sudah merekam</div><b style="font-size:22px">${t.n}</b></div></div>`+
  R.map(r=>`<div class="c"><div class="row"><b>${N[r.k]}</b><b>${r.p==null?'–':r.p+'%'}</b></div><div class="bar"><i style="width:${r.p||0}%"></i></div><div class="row"><span class="m">${r.p==null?'Data belum cukup':r.p+'% pegawai di atas normal (n='+r.n+')'}</span>${spark(r.tr)}</div></div>`).join('')+
  `<div class="c"><h3>Indikasi kebutuhan obat</h3>${R.filter(r=>r.p>=10).sort((a,b)=>b.p-a.p).map(r=>`<p>• <b>${N[r.k]}</b> (${r.p}%): ${OBAT[r.k]}</p>`).join('')||'<p class="m">Tidak ada indikator di atas 10%.</p>'}<p class="m">Bersifat indikatif, bukan resep. Konsultasikan dengan dokter/apoteker.</p></div>
  ${tAdm(d)}<div class="c"><b>Aktivitas 30 hari terakhir</b><p class="m">${d.wo.aktif} pegawai aktif · ${d.wo.sesi} sesi workout</p></div>`},
-ref(){const L={gula_puasa:'Gula puasa (mg/dL)',gula_2jam:'Gula 2 jam setelah makan (mg/dL)',gula_sewaktu:'Gula sewaktu (mg/dL)',sis:'Sistolik (mmHg)',dia:'Diastolik (mmHg)',au_pria:'Asam urat pria (mg/dL)',au_wanita:'Asam urat wanita (mg/dL)',kol:'Kolesterol total (mg/dL)'};
- return`<form class="c" onsubmit="saveRef(event)"><h3>Batas nilai normal</h3><p class="m">Nilai di atas/sama dengan batas dianggap "di atas normal" (asam urat: di atas batas).</p>${Object.keys(L).map(k=>F(k,L[k],S.c[k])).join('')}<button class="btn">Simpan</button></form>`},
+ref(){const L={gula_puasa:'Gula puasa (mg/dL)',gula_2jam:'Gula 2 jam setelah makan (mg/dL)',gula_sewaktu:'Gula sewaktu (mg/dL)',sis:'Sistolik (mmHg)',dia:'Diastolik (mmHg)',au_pria:'Asam urat pria (mg/dL)',au_wanita:'Asam urat wanita (mg/dL)',kol:'Kolesterol total (mg/dL)',pengingat_tgl:'Mulai kirim pengingat bulanan (tanggal 1-28)'};
+ return`<form class="c" onsubmit="saveRef(event)"><h3>Batas nilai normal</h3><p class="m">Nilai di atas/sama dengan batas dianggap "di atas normal" (asam urat: di atas batas).</p>${Object.keys(L).map(k=>F(k,L[k],S.c[k])).join('')}${F('unit_list','Daftar unit kerja (pisahkan dengan koma)',(S.units||[]).join(', '),'text')}<button class="btn">Simpan</button></form>`},
+async tan(){const L=await api('challenges');return`<form class="c" onsubmit="saveCh(event)"><h3>Buat Tantangan Kantor</h3><p class="m">Pegawai ikut secara sukarela. Peringkat antar unit memakai rata-rata menit per peserta.</p>${F('nama','Nama tantangan','','text','required')}${F('mulai','Mulai',today(),'date','required')}${F('selesai','Selesai','','date','required')}<button class="btn">Buat Tantangan</button></form>`+L.map(c=>`<div class="c"><div class="row"><div><b>${esc(c.nama)}</b><div class="m">${c.mulai} s/d ${c.selesai} · ${c.n} peserta</div></div><button class="lk" onclick="delCh('${c.id}')">Hapus</button></div></div>`).join('')},
 async usr(){const l=S.users=await api('listUsers');return l.map(x=>`<div class="c"><div class="row"><div><b>${esc(x.nama)}</b><div class="m">${esc(x.email)}</div></div><span><button class="lk" onclick="resetU('${x.id}')">Reset sandi</button> <button class="lk" onclick="delU('${x.id}')">Hapus</button></span></div>
 ${x.id==S.u.id?'<span class="bd">Anda</span>':`<select onchange="setRole('${x.id}',this.value)"><option value="individu" ${x.role=='individu'?'selected':''}>Pegawai</option><option value="admin" ${x.role=='admin'?'selected':''}>Admin</option></select>`}</div>`).join('')}};
 async function saveRef(e){e.preventDefault();try{await api('saveRef',val(e.target));toast('Referensi tersimpan ✓');await boot()}catch(x){toast(x)}}
@@ -134,7 +140,7 @@ async function delU(id){if(!confirm('Hapus pengguna beserta seluruh datanya?'))r
 const avs=()=>S.u.fotoData?`style="background-image:url(${S.u.fotoData})"`:'';
 function prof(){const u=S.u,d=sheet(`<h3>Profil Saya</h3><div style="text-align:center"><button class="av" style="width:96px;height:96px;font-size:36px;${u.fotoData?`background-image:url(${u.fotoData})`:''}" onclick="$('#pf').click()">${u.fotoData?'':esc(u.nama[0]||'?')}</button><input id="pf" type="file" accept="image/*" hidden onchange="pickPhoto(this)">
 <div class="row" style="justify-content:center"><button class="lk" onclick="$('#pf').click()">Ganti foto</button>${u.foto?'<button class="lk" onclick="delPhoto()">Hapus foto</button>':''}</div></div>
-<form>${F('nama','Nama lengkap',u.nama,'text','required')}<label>Email<input value="${esc(u.email)}" disabled></label>${F('umur','Umur (tahun)',u.umur)}${SEL('gender','Jenis kelamin',[['Laki-laki','Laki-laki'],['Perempuan','Perempuan']],u.gender)}${F('bb','Berat badan (kg)',u.bb)}${F('tb','Tinggi badan (cm)',u.tb)}${F('riwayat','Riwayat penyakit bawaan',u.riwayat,'text')}<button class="btn">Simpan Profil</button></form>
+<form>${F('nama','Nama lengkap',u.nama,'text','required')}<label>Email<input value="${esc(u.email)}" disabled></label>${F('umur','Umur (tahun)',u.umur)}${SEL('gender','Jenis kelamin',[['Laki-laki','Laki-laki'],['Perempuan','Perempuan']],u.gender)}${F('bb','Berat badan (kg)',u.bb)}${F('tb','Tinggi badan (cm)',u.tb)}${S.units&&S.units.length?SEL('unit','Unit kerja',S.units.map(x=>[x,x]),u.unit):''}${F('riwayat','Riwayat penyakit bawaan',u.riwayat,'text')}<button class="btn">Simpan Profil</button></form>
 <button class="btn s" onclick="cl();fPass()">Ganti Kata Sandi</button>`);save(d,'saveProfile')}
 function fPass(){const d=sheet(`<h3>Ganti Kata Sandi</h3><form>${F('lama','Kata sandi lama','','password','required')}${F('baru','Kata sandi baru (min. 6 karakter)','','password','required')}<button class="btn">Simpan</button></form>`);save(d,'changePass')}
 function pickPhoto(i){const f=i.files[0];if(!f)return;const im=new Image();
@@ -176,7 +182,7 @@ function tUser(){const B={},add=(t,x)=>{const k=bkc(S.per,x.tanggal);(B[k]=B[k]|
  ['Tekanan diastolik',b=>avg(b.med.map(x=>x.dia)),{unit:'mmHg',ref:c.dia,good:'down'}],
  ['Asam urat',b=>avg(b.med.map(x=>x.asamUrat)),{unit:'mg/dL',ref:au,good:'down'}],
  ['Kolesterol total',b=>avg(b.med.map(x=>x.kolesterol)),{unit:'mg/dL',ref:c.kol,good:'down'}],
- ['Total menit workout',b=>b.wo.reduce((s,x)=>s+(+x.durasi||0),0)||null,{unit:'mnt',good:'up'}],
+ ['Berat badan',b=>avg(b.med.map(x=>x.bb)),{unit:'kg'}],['IMT',b=>{const w=avg(b.med.map(x=>x.bb)),h=+S.u.tb;return w&&h?Math.round(w/((h/100)**2)*10)/10:null},{ref:25}],['Total menit workout',b=>b.wo.reduce((s,x)=>s+(+x.durasi||0),0)||null,{unit:'mnt',good:'up'}],
  ['Sesi workout',b=>b.wo.length||null,{good:'up'}],
  ['Rata-rata detak jantung',b=>avg(b.wo.map(x=>x.hr)),{unit:'bpm'}]];
  return`<div class="c"><h3>Tren Saya</h3>${perTab()}${R.map(([n,f,o])=>ch(n,ks,ks.map(k=>f(B[k])),o)).join('')}<p class="m">Garis putus-putus = batas normal.</p>${note}</div>`}
@@ -186,6 +192,46 @@ function tAdm(d){const T=Object.fromEntries(d.tren.map(x=>[x.b,x])),W=Object.fro
  ['Pegawai merekam data medis',ok(T,x=>x.n),{}],['Pegawai aktif workout',ok(W,x=>x.aktif),{good:'up'}],
  ['Total sesi workout',ok(W,x=>x.sesi),{good:'up'}],['Total menit workout',ok(W,x=>x.menit),{unit:'mnt',good:'up'}]];
  return`<div class="c"><h3>Tren Agregat</h3>${perTab()}${R.map(([n,v,o])=>ch(n,ks,v,o)).join('')}<p class="m">Periode dengan kurang dari 5 pegawai disembunyikan.</p>${note}</div>`}
+
+/* ---------- Peringatan kritis, filter, ekspor ---------- */
+const crit=v=>{const m=[],g=+v.gula,s=+v.sis,d=+v.dia,a=+v.asamUrat,k=+v.kolesterol;
+ if(has(v.gula)&&(g>=300||g<70))m.push(`Gula darah ${g} mg/dL sangat ${g<70?'rendah':'tinggi'}`);
+ if(has(v.sis)&&s>=180||has(v.dia)&&d>=120)m.push(`Tekanan darah ${v.sis||'?'}/${v.dia||'?'} mmHg sangat tinggi`);
+ if(has(v.asamUrat)&&a>=10)m.push(`Asam urat ${a} mg/dL sangat tinggi`);
+ if(has(v.kolesterol)&&k>=300)m.push(`Kolesterol ${k} mg/dL sangat tinggi`);return m};
+function warn(m){sheet(`<h3>⚠️ Perhatian pada hasil Anda</h3>${m.map(x=>`<p><b>${esc(x)}</b></p>`).join('')}<p>Nilai ini jauh di luar batas normal. Disarankan segera berkonsultasi dengan dokter atau fasilitas kesehatan. Aplikasi ini bukan alat diagnosis. Jika disertai gejala berat seperti nyeri dada, sesak napas, atau pingsan, segera ke IGD.</p><button class="btn" onclick="cl()">Saya mengerti</button>`)}
+async function toReg(){S.reg=!S.reg;if(S.reg&&!S.units){try{S.units=(await api('meta')).units}catch(e){S.units=[]}}auth()}
+const fsel=(k,l,o)=>`<select aria-label="${l}" onchange="S.fl.${k}=this.value;show()">${[['',l+': semua'],...o].map(([v,t])=>`<option value="${esc(v)}" ${S.fl[k]==v?'selected':''}>${esc(t)}</option>`).join('')}</select>`;
+const fbar=()=>`<div class="c noprint"><div class="m">Filter kelompok (data tetap anonim)</div><div class="g3">${fsel('unit','Unit',(S.units||[]).map(x=>[x,x]))}${fsel('gender','Jenis kelamin',[['Laki-laki','Laki-laki'],['Perempuan','Perempuan']])}${fsel('age','Umur',['<30','30-39','40-49','50+'].map(x=>[x,x]))}</div></div>`;
+const fdesc=()=>['unit','gender','age'].map(k=>S.fl[k]?k+': '+S.fl[k]:'').filter(Boolean).join(', ')||'Semua pegawai';
+const xbar=()=>`<div class="c noprint"><div class="row"><button class="lk" onclick="exCsv()">⬇ Unduh Excel (CSV)</button><button class="lk" onclick="window.print()">🖨 Cetak / PDF</button></div></div><div class="prt">Laporan Kesehatan Pegawai · ${PER.find(x=>x[0]==S.per)[1]} · ${esc(fdesc())} · ${today()}</div>`;
+function exCsv(){const d=S.rep,t=d.terbaru,q=[['Laporan agregat anonim SehatKu'],['Periode tren',PER.find(x=>x[0]==S.per)[1]],['Filter',fdesc()],['Tanggal',today()],[],['Indikator','Pegawai terukur','% di atas normal','Indikasi kebutuhan obat']];
+ Object.keys(N).forEach(k=>{const p=P(t[k]);q.push([N[k],t[k].n,p==null?'':p,p>=10?OBAT[k]:''])});
+ const T=Object.fromEntries(d.tren.map(x=>[x.b,x])),W=Object.fromEntries(d.woTren.map(x=>[x.b,x])),ks=[...new Set([...Object.keys(T),...Object.keys(W)])].sort().slice(-6),ok=(o,f)=>ks.map(b=>o[b]&&!o[b].min?f(o[b]):'');
+ q.push([],['Tren',...ks.map(lab)]);Object.keys(N).forEach(k=>q.push([N[k]+' (% di atas normal)',...ok(T,x=>P(x[k]))]));
+ q.push(['Pegawai aktif workout',...ok(W,x=>x.aktif)],['Total sesi workout',...ok(W,x=>x.sesi)],['Total menit workout',...ok(W,x=>x.menit)]);
+ const csv='\ufeff'+q.map(r=>r.map(c=>'"'+String(c??'').replace(/"/g,'""')+'"').join(';')).join('\r\n'),a=document.createElement('a');
+ a.href=URL.createObjectURL(new Blob([csv],{type:'text/csv;charset=utf-8'}));a.download='laporan-sehatku-'+today()+'.csv';a.click()}
+
+/* ---------- Target, lencana, tantangan kantor ---------- */
+const wk=d=>{const t=new Date(d+'T00:00:00');t.setDate(t.getDate()-(t.getDay()+6)%7);return t.toLocaleDateString('sv')};
+function wkStats(){const M={};S.wo.forEach(x=>{const k=wk(x.tanggal);M[k]=(M[k]||0)+(+x.durasi||0)});
+ const tg=S.u.target||150,cur=wk(today()),mc=M[cur]||0,k=new Date(cur+'T00:00:00');let streak=mc>=tg?1:0;k.setDate(k.getDate()-7);
+ while((M[k.toLocaleDateString('sv')]||0)>=tg){streak++;k.setDate(k.getDate()-7)}
+ return{tg,mc,streak,met:Object.values(M).filter(x=>x>=tg).length,tot:Object.values(M).reduce((s,x)=>s+x,0)}}
+function tgtCard(c){const s=wkStats(),n=S.wo.length,pct=Math.min(100,Math.round(s.mc/s.tg*100)),
+ B=[['👟','Langkah Pertama','1 sesi workout',n>=1],['🔟','10 Sesi','10 sesi workout',n>=10],['🏃','30 Sesi','30 sesi workout',n>=30],['🎯','Target Tercapai','Capai target 1 minggu',s.met>=1],['🔥','Konsisten','Streak 4 minggu',s.streak>=4],['⏱️','1000 Menit','Total 1000 menit',s.tot>=1000]];
+ return`<div class="c"><div class="row"><b>Target Minggu Ini</b><button class="lk" onclick="fTgt()">Ubah target</button></div><div class="row"><span style="font-size:22px;font-weight:700">${s.mc} / ${s.tg} mnt</span><span class="bd">${s.streak>0?'🔥 '+s.streak+' minggu':'Mulai streak!'}</span></div><div class="bar"><i style="width:${pct}%"></i></div><div class="m">${pct>=100?'🎉 Target minggu ini tercapai!':'Sisa '+(s.tg-s.mc)+' menit (Senin–Minggu)'}</div>
+${c?'':`<div class="bgs">${B.map(([i,t,d,ok])=>`<div class="bgd ${ok?'':'off'}"><div style="font-size:26px">${i}</div><b>${t}</b><div class="m">${d}</div></div>`).join('')}</div>`}</div>`}
+function fTgt(){const d=sheet(`<h3>Target Workout Mingguan</h3><p class="m">WHO menyarankan sekitar 150 menit aktivitas fisik sedang per minggu untuk orang dewasa.</p><form>${F('menit','Target (menit per minggu)',S.u.target||150,'number','required min="30" max="2000"')}<button class="btn">Simpan</button></form>`);save(d,'saveTarget')}
+async function chSec(){try{const L=await api('challenges');if(!L.length)return'';const T=today();
+ return L.map(c=>{const st=T<c.mulai?'Akan datang':T>c.selesai?'Selesai':'Berlangsung',mine=S.wo.filter(x=>x.tanggal>=c.mulai&&x.tanggal<=c.selesai).reduce((s,x)=>s+(+x.durasi||0),0);
+ return`<div class="c"><div class="row"><b>🏆 ${esc(c.nama)}</b><span class="bd ${st=='Selesai'?'h':''}">${st}</span></div><div class="m">${c.mulai} s/d ${c.selesai} · ${c.n} peserta · ${c.total} menit total</div>
+${c.ikut?`<p>Kontribusi Anda: <b>${mine} menit</b></p>`:''}${c.board.length?c.board.map((b,i)=>`<div class="row"><span>${i+1}. ${esc(b.unit)}</span><b>${b.min?'<span class="m">menunggu peserta ('+b.n+')</span>':b.avg+' mnt/orang'}</b></div>`).join(''):'<p class="m">Belum ada peserta.</p>'}
+${st!='Selesai'?`<button class="btn ${c.ikut?'s':''}" onclick="joinCh('${c.id}',${!c.ikut})">${c.ikut?'Keluar dari tantangan':'Ikut tantangan'}</button>`:''}<p class="m">Peringkat antar unit berdasarkan rata-rata menit per peserta (minimal 3 peserta per unit). Ikut serta bersifat sukarela.</p></div>`}).join('')}catch(e){return''}}
+async function joinCh(id,j){try{await api(j?'joinCh':'leaveCh',{id});toast(j?'Anda ikut tantangan 🎉':'Anda keluar dari tantangan');show()}catch(x){toast(x)}}
+async function saveCh(e){e.preventDefault();try{await api('saveCh',val(e.target));toast('Tantangan dibuat ✓');show()}catch(x){toast(x)}}
+async function delCh(id){if(!confirm('Hapus tantangan ini?'))return;try{await api('delCh',{id});toast('Dihapus');show()}catch(x){toast(x)}}
 
 /* ---------- Lupa kata sandi ---------- */
 function fForgot(){cl();const d=sheet(`<h3>Lupa Kata Sandi</h3><p class="m">Masukkan email akun Anda. Kami kirim kode 6 digit ke email tersebut.</p><form>${F('email','Email','','email','required')}<button class="btn">Kirim Kode</button></form><p class="m">Email tidak masuk? Cek folder spam, atau hubungi admin untuk reset manual.</p>`);
