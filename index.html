@@ -76,7 +76,7 @@ header{position:sticky;top:0;z-index:4;padding-bottom:10px;border-width:0 0 1px;
 </style></head><body><div id="app"></div>
 <script>
 const API='https://script.google.com/macros/s/AKfycbyncBaRg4Lv4t6uKYW2xhwsnS5FXcmsoDEO8mGRvCgtJOJnLPJoj5OlAQevUQAFO4tlUg/exec';
-const $=s=>document.querySelector(s),S={t:localStorage.t,tab:'dash',sub:'umum',per:'bulan',fl:{unit:'',gender:'',age:''},med:[],wo:[],meal:[],prog:[],gz:'kal',pb:0,reg:false};
+const $=s=>document.querySelector(s),S={t:localStorage.t,tab:'dash',sub:'umum',per:'bulan',fl:{unit:'',gender:'',age:''},med:[],wo:[],meal:[],prog:[],rencana:[],gz:'kal',pb:0,reg:false};
 const N={gula:'Gula darah',td:'Tekanan darah',au:'Asam urat',kol:'Kolesterol'};
 const REC={gula:'Kurangi gula & karbohidrat sederhana, perbanyak serat, dan ulangi cek gula darah.',td:'Kurangi garam, kelola stres, tidur cukup, dan pantau tekanan darah rutin.',au:'Kurangi jeroan, seafood tertentu & minuman manis; perbanyak minum air putih.',kol:'Kurangi gorengan & lemak jenuh; perbanyak sayur, buah, dan olahraga.'};
 const OBAT={gula:'antidiabetik & strip/alat cek gula darah',td:'antihipertensi & tensimeter',au:'obat penurun asam urat & pereda nyeri sendi',kol:'obat/suplemen penurun kolesterol'};
@@ -286,13 +286,13 @@ async function saveCh(e){e.preventDefault();try{await api('saveCh',val(e.target)
 async function delCh(id){if(!confirm('Hapus tantangan ini?'))return;try{await api('delCh',{id});toast('Dihapus');show()}catch(x){toast(x)}}
 
 /* ---------- Muat data cepat ---------- */
-function apply(d){const old=S.u&&S.u.fotoData;Object.assign(S,{u:d.user,c:d.cfg,units:d.units,med:d.med,wo:d.wo,meal:d.meal||[],prog:d.prog||[]});if(old&&S.u.foto)S.u.fotoData=old;
- try{localStorage.bd=JSON.stringify({u:S.u,c:S.c,units:S.units,med:S.med,wo:S.wo,meal:S.meal,prog:S.prog})}catch(e){}
+function apply(d){const old=S.u&&S.u.fotoData;Object.assign(S,{u:d.user,c:d.cfg,units:d.units,med:d.med,wo:d.wo,meal:d.meal||[],prog:d.prog||[],rencana:d.rencana||[]});if(old&&S.u.foto)S.u.fotoData=old;
+ try{localStorage.bd=JSON.stringify({u:S.u,c:S.c,units:S.units,med:S.med,wo:S.wo,meal:S.meal,prog:S.prog,rencana:S.rencana})}catch(e){}
  shell();show();loadFoto();setTimeout(prefetch,400);if(S.u.wajib)force()}
 function prefetch(){apic('challenges',0,60000).catch(()=>{});if(S.u.role=='admin')apic('dashAdmin',{per:S.per,f:S.fl},120000).catch(()=>{})}
 async function loadFoto(){if(!S.u.foto||S.u.fotoData)return;try{const d=await api('foto');S.u.fotoData=d.d;
  const b=document.querySelector('header .av');if(b){b.style.backgroundImage=`url(${d.d})`;b.textContent=''}
- try{localStorage.bd=JSON.stringify({u:S.u,c:S.c,units:S.units,med:S.med,wo:S.wo,meal:S.meal,prog:S.prog})}catch(e){}}catch(e){}}
+ try{localStorage.bd=JSON.stringify({u:S.u,c:S.c,units:S.units,med:S.med,wo:S.wo,meal:S.meal,prog:S.prog,rencana:S.rencana})}catch(e){}}catch(e){}}
 
 /* ---------- Nutrisi: kalori, rencana makan, program ---------- */
 const AKT={1.2:'Sangat jarang olahraga',1.375:'Ringan (1–3 hari/minggu)',1.55:'Sedang (3–5 hari/minggu)',1.725:'Aktif (6–7 hari/minggu)',1.9:'Sangat aktif (fisik berat/atlet)'};
@@ -303,13 +303,20 @@ function calc(){const u=S.u,w=+u.bb,h=+u.tb,a=+u.umur;if(!(w&&h&&a))return null;
  return{bmr,tdee,t,pr,fa,ch,dir,tb,wk:dir?Math.ceil(Math.abs(tb-w)/rt):0,lim:dir<0&&t<=Math.max(tdee*.75,flo)+10}}
 const prow=(l,v,t,u)=>`<div class="row"><span>${l}</span><span class="m">${Math.round(v)} / ${t} ${u}</span></div><div class="bar"><i style="width:${Math.min(100,v/t*100)}%"></i></div>`;
 async function saveKal(e){e.preventDefault();try{await api('saveKalori',val(e.target));toast('Target tersimpan ✓');await boot()}catch(x){toast(x)}}
-async function fMeal(){let L=[];try{L=await apic('pangan',0,36e5)}catch(e){}
- const d=sheet(`<h3>Catat Makanan</h3><form>${F('tanggal','Tanggal',today(),'date','required')}${SEL('waktu','Waktu makan',['Sarapan','Makan siang','Makan malam','Selingan'].map(x=>[x,x]))}
-<label>Nama makanan (ketik untuk mencari)<input name="nama" list="pgl" autocomplete="off" required></label><datalist id="pgl">${L.map(x=>`<option value="${esc(x.nama)}">`).join('')}</datalist><div class="m" id="pgi"></div>
-${F('jml','Jumlah porsi','1','number','min="0.25"')}${F('kkal','Kalori (kkal)','','number','required')}${F('protein','Protein (g)')}${F('karbo','Karbohidrat (g)')}${F('lemak','Lemak (g)')}<button class="btn">Simpan</button></form>`);
+async function foodForm(title,a,m={},nodate){let L=[];try{L=await apic('pangan',0,36e5)}catch(e){}
+ const d=sheet(`<h3>${title}</h3><form>${nodate?'':F('tanggal','Tanggal',today(),'date','required')}${SEL('waktu','Waktu makan',['Sarapan','Makan siang','Makan malam','Selingan'].map(x=>[x,x]),m.waktu)}
+<label>Nama makanan (ketik untuk mencari)<input name="nama" list="pgl" autocomplete="off" required value="${esc(m.nama||'')}"></label><datalist id="pgl">${L.map(x=>`<option value="${esc(x.nama)}">`).join('')}</datalist><div class="m" id="pgi"></div>
+${F('jml','Jumlah porsi',m.jml||'1','number','min="0.25"')}${F('kkal','Kalori (kkal)',m.kkal,'number','required')}${F('protein','Protein (g)',m.protein)}${F('karbo','Karbohidrat (g)',m.karbo)}${F('lemak','Lemak (g)',m.lemak)}<button class="btn">Simpan</button></form>`);
  closable(d);const f=d.querySelector('form'),fill=()=>{const it=L.find(x=>x.nama.toLowerCase()==f.nama.value.trim().toLowerCase()),j=+f.jml.value||1,r=v=>Math.round(v*j*10)/10;
   $('#pgi').textContent=it?'1 porsi = '+it.porsi+' (estimasi)':'';if(it){f.kkal.value=Math.round(it.kkal*j);f.protein.value=r(it.protein);f.karbo.value=r(it.karbo);f.lemak.value=r(it.lemak)}};
- f.nama.addEventListener('input',fill);f.jml.addEventListener('input',fill);save(d,'saveMeal')}
+ f.nama.addEventListener('input',fill);f.jml.addEventListener('input',fill);save(d,a,m.id)}
+function fMeal(){return foodForm('Catat Makanan','saveMeal')}
+function fRc(m,w){return foodForm(m&&m.id?'Ubah Makanan':'Tambah ke Rencana','saveRencana',m||{waktu:w},1)}
+async function useSample(a){if(S.rencana.length&&!confirm('Ganti rencana Anda dengan paket contoh ini?'))return;
+ const items=PLAN[a].map(m=>({waktu:m[0],nama:m[1],jml:1,kkal:m[2],protein:Math.round(m[2]*.18/4),karbo:Math.round(m[2]*.5/4),lemak:Math.round(m[2]*.32/9)}));
+ try{await api('setRencana',{items});toast('Rencana diperbarui ✓');await boot()}catch(x){toast(x)}}
+async function planToMeals(){try{await api('planToMeals');toast('Tercatat ke asupan hari ini ✓');await boot()}catch(x){toast(x)}}
+async function clearPlan(){if(!confirm('Kosongkan seluruh rencana makan Anda?'))return;try{await api('setRencana',{items:[]});toast('Rencana dikosongkan');await boot()}catch(x){toast(x)}}
 const PLAN={1400:[['Sarapan','Oatmeal 40 g + 1 telur rebus + ½ pisang',330],['Makan siang','Nasi ½ porsi, ayam panggang 80 g, tumis sayur',430],['Makan malam','Pepes ikan 80 g, sayur bening, tempe 2 potong',400],['Selingan','Yoghurt plain + buah potong',240]],
 1700:[['Sarapan','Roti gandum 2 lembar + telur orak-arik + pepaya',400],['Makan siang','Nasi 1 porsi kecil, ikan bakar 100 g, lalapan, tahu',520],['Makan malam','Sup ayam sayur, nasi ½ porsi, tempe bacem',480],['Selingan','Kacang rebus + jeruk',300]],
 2000:[['Sarapan','Nasi merah ½ porsi, 2 telur, tumis kangkung, teh tawar',480],['Makan siang','Nasi 1 porsi, ayam/ikan 100 g, sayur asem, tempe',620],['Makan malam','Soto ayam tanpa santan, nasi, perkedel jagung',580],['Selingan','Pisang + susu rendah lemak',320]],
@@ -322,7 +329,7 @@ const PROG=[
 {id:'tenis',ikon:'🎾',nama:'Nutrisi Persiapan Tenis (7 hari)',desc:'Energi dan cairan untuk pertandingan yang panjang dan intens.',days:[['Hidrasi harian','Biasakan minum sebelum haus; bawa botol ke lapangan.'],['Sarapan pra-main','Karbohidrat + sedikit protein 2–3 jam sebelum bermain.'],['Camilan antar set','Pisang, kurma, atau roti isi selai; ambil saat pergantian sisi.'],['Elektrolit','Saat panas/berkeringat banyak, tambahkan elektrolit atau sedikit garam.'],['Pemulihan','Protein + karbohidrat dalam 1–2 jam setelah main.'],['Tidur dan makan malam','Makan malam ringan, tidur 7–8 jam sebelum pertandingan.'],['Hari H','Makan familiar, cairan teratur, bekal camilan siap.']]},
 {id:'sepeda',ikon:'🚴',nama:'Nutrisi Persiapan Bersepeda (7 hari)',desc:'Bahan bakar dan cairan untuk gowes jarak menengah hingga jauh.',days:[['Hidrasi','Isi dua bidon; target 500–750 ml per jam saat cuaca panas.'],['Sarapan pra-gowes','Karbohidrat 2–3 jam sebelum berangkat.'],['Makan sebelum lapar','Pada gowes >90 menit, mulai makan sejak 30–45 menit pertama.'],['Uji bekal','Coba 30–60 g karbohidrat per jam (pisang, roti, gel) saat latihan.'],['Pemulihan','Protein + karbohidrat segera setelah gowes.'],['Persiapan bekal','Siapkan bekal, elektrolit, dan uang tunai.'],['Hari H','Sarapan biasa, minum teratur, makan sesuai jadwal.']]}];
 const daysSince=m=>Math.floor((new Date(today()+'T00:00:00')-new Date(m+'T00:00:00'))/864e5);
-function persist(){try{localStorage.bd=JSON.stringify({u:S.u,c:S.c,units:S.units,med:S.med,wo:S.wo,meal:S.meal,prog:S.prog})}catch(e){}}
+function persist(){try{localStorage.bd=JSON.stringify({u:S.u,c:S.c,units:S.units,med:S.med,wo:S.wo,meal:S.meal,prog:S.prog,rencana:S.rencana})}catch(e){}}
 async function progAct(a,pid,hari){if(a=='quitProg'&&!confirm('Berhenti dari program ini?'))return;
  const bak=JSON.stringify(S.prog);
  if(a=='startProg')S.prog.push({pid,mulai:today(),hari:''});
@@ -340,9 +347,14 @@ ${k.lim?'<p class="m">Target dibatasi pada batas aman minimal; turunkan laju ata
  const log=`<div class="c"><div class="row"><b>Asupan Hari Ini</b><button class="lk" onclick="fMeal()">+ Catat</button></div>${k?prow('Kalori',sm('kkal'),k.t,'kkal')+prow('Protein',sm('protein'),k.pr,'g')+prow('Karbo',sm('karbo'),k.ch,'g')+prow('Lemak',sm('lemak'),k.fa,'g'):''}
 ${ml.length?ml.map(x=>`<div class="row"><span>${esc(x.waktu)}: ${esc(x.nama)}</span><span>${x.kkal} kkal <button class="lk" onclick="del('Meal','${x.id}')">✕</button></span></div>`).join(''):'<p class="m">Belum ada makanan tercatat hari ini.</p>'}</div>`;
  return res+log+form},
-plan(){const k=calc(),b=[1400,1700,2000,2400],a=S.pb||(k?b.reduce((x,y)=>Math.abs(y-k.t)<Math.abs(x-k.t)?y:x):1700),P=PLAN[a];
- return`<div class="c"><b>Contoh Rencana Makan Sehari</b><p class="m">${k?'Target Anda '+k.t+' kkal; ditampilkan paket terdekat.':'Pilih paket kalori.'}</p><div class="tab" style="margin:0 0 8px">${b.map(x=>`<button class="${x==a?'on':''}" onclick="S.pb=${x};show()">${x}</button>`).join('')}</div>
-${P.map(m=>`<div class="row"><div><b>${m[0]}</b><div class="m">${m[1]}</div></div><span class="bd">${m[2]} kkal</span></div>`).join('')}<p class="m">Porsi perkiraan; sesuaikan dengan target dan selera. Variasikan sayur, buah, dan sumber protein tiap hari.</p></div>`},
+plan(){const k=calc(),b=[1400,1700,2000,2400],a=S.pb||(k?b.reduce((x,y)=>Math.abs(y-k.t)<Math.abs(x-k.t)?y:x):1700),P=PLAN[a],R=S.rencana||[],sm=f=>R.reduce((t,x)=>t+(+x[f]||0),0),tk=sm('kkal'),W=['Sarapan','Makan siang','Makan malam','Selingan'],df=k?k.t-tk:0;
+ const mine=`<div class="c"><div class="row"><b>Rencana Saya</b><button class="lk" onclick="fRc()">+ Tambah</button></div>
+<div style="margin:10px 0"><span style="font-size:34px;font-weight:700">${Math.round(tk)}</span> <span class="m">kkal${k?' dari target '+k.t:''}</span></div>
+${k?`<div class="bar"><i style="width:${Math.min(100,tk/k.t*100)}%"></i></div><div class="m">${!R.length?'Belum ada makanan. Tambahkan atau pakai paket contoh di bawah.':df>=0?'Sisa '+Math.round(df)+' kkal':'Lebih '+Math.round(-df)+' kkal dari target'}</div>${prow('Protein',sm('protein'),k.pr,'g')}${prow('Karbo',sm('karbo'),k.ch,'g')}${prow('Lemak',sm('lemak'),k.fa,'g')}`:'<p class="m">Lengkapi profil agar target kalori tampil.</p>'}
+${W.map(w=>{const it=R.filter(x=>x.waktu==w);return`<div style="margin-top:12px"><div class="row"><b>${w}</b><span class="m">${Math.round(it.reduce((t,x)=>t+(+x.kkal||0),0))} kkal <button class="lk" onclick="fRc(0,'${w}')">+</button></span></div>${it.map(x=>`<div class="row"><span>${esc(x.nama)}${+x.jml!=1?' ×'+x.jml:''}</span><span>${Math.round(x.kkal)} kkal <button class="lk" onclick="fRc(S.rencana.find(z=>z.id=='${x.id}'))">Ubah</button> <button class="lk" onclick="del('Rencana','${x.id}')">✕</button></span></div>`).join('')||'<div class="m">–</div>'}</div>`}).join('')}
+${R.length?`<button class="btn" onclick="planToMeals()">Catat semua ke asupan hari ini</button><button class="btn s" onclick="clearPlan()">Kosongkan rencana</button>`:''}</div>`;
+ return mine+`<div class="c"><b>Paket Contoh</b><p class="m">${k?'Target Anda '+k.t+' kkal; paket terdekat ditampilkan.':'Pilih paket kalori.'}</p><div class="tab" style="margin:0 0 8px">${b.map(x=>`<button class="${x==a?'on':''}" onclick="S.pb=${x};show()">${x}</button>`).join('')}</div>
+${P.map(m=>`<div class="row"><div><b>${m[0]}</b><div class="m">${m[1]}</div></div><span class="bd">${m[2]} kkal</span></div>`).join('')}<button class="btn s" onclick="useSample(${a})">Pakai sebagai rencana saya</button><p class="m">Porsi dan makronutrien perkiraan; ubah sesuai kebutuhan.</p></div>`},
 prog(){return PROG.map(p=>{const r=S.prog.find(x=>x.pid==p.id),n=p.days.length;
  if(!r)return`<div class="c"><div class="row"><b>${p.ikon} ${p.nama}</b><span class="bd">${n} hari</span></div><p class="m">${p.desc}</p><button class="btn" onclick="progAct('startProg','${p.id}')">Mulai program</button></div>`;
  const dn=(String(r.hari||'').match(/\d+/g)||[]).map(Number),cur=Math.min(n,Math.max(0,daysSince(r.mulai))+1),t=p.days[cur-1],ok=dn.includes(cur);
