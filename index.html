@@ -63,7 +63,9 @@ const OBAT={gula:'antidiabetik & strip/alat cek gula darah',td:'antihipertensi &
 const esc=s=>String(s??'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
 const has=v=>v!==''&&v!=null,today=()=>new Date().toLocaleDateString('sv'),by=(a,b)=>a.tanggal<b.tanggal?-1:1;
 const val=f=>Object.fromEntries(new FormData(f));
-async function api(a,p){const r=await(await fetch(API,{method:'POST',body:JSON.stringify({a,p,t:S.t})})).json();
+let AC={};
+async function apic(a,p,ms){const k=a+JSON.stringify(p||0),c=AC[k];if(c&&Date.now()-c.t<ms)return c.d;const d=await api(a,p);AC[k]={t:Date.now(),d};return d}
+async function api(a,p){if(!/^(boot|challenges|dashAdmin|listUsers|meta|foto)$/.test(a))AC={};const r=await(await fetch(API,{method:'POST',body:JSON.stringify({a,p,t:S.t})})).json();
  if(!r.ok){if(/Sesi/.test(r.e))out();throw r.e}return r.d}
 function toast(m){const d=document.createElement('div');d.className='toast';d.textContent=m;document.body.append(d);setTimeout(()=>d.remove(),2800)}
 const F=(n,l,v='',t='number',x='')=>`<label>${l}<input name="${n}" type="${t}" value="${esc(v)}" step="any" ${x}></label>`;
@@ -87,7 +89,7 @@ ${r?'<label style="display:flex;gap:10px;align-items:center"><input type="checkb
 <button class="btn">${r?'Daftar':'Masuk'}</button></form>
 <button class="btn s" onclick="toReg()">${r?'Sudah punya akun? Masuk':'Belum punya akun? Daftar'}</button>${r?'':'<button type="button" class="lk" style="display:block;margin:14px auto 0" onclick="fForgot()">Lupa kata sandi?</button>'}</div><div class="fn">SigerFit v.1.0<br>Kantor Wilayah DJPb Provinsi Lampung<br>2026</div><p class="m" style="text-align:center;margin:0 0 24px;font-size:12px">SigerFit v.1.0</p>`}
 async function doAuth(e){e.preventDefault();const b=e.target.querySelector('button');b.disabled=1;b.textContent='Memproses…';
- try{const d=await api(S.reg?'register':'login',val(e.target));S.t=localStorage.t=d.token;await boot()}
+ try{const d=await api(S.reg?'register':'login',val(e.target));S.t=localStorage.t=d.token;d.user?apply(d):await boot()}
  catch(x){toast(x);b.disabled=0;b.textContent=S.reg?'Daftar':'Masuk'}}
 function out(){localStorage.removeItem('t');localStorage.removeItem('bd');S.t=null;S.u=null;auth()}
 
@@ -105,7 +107,7 @@ async function show(){document.querySelectorAll('nav button[data-k]').forEach(b=
  const m=$('#main');m.innerHTML='<div class="sk"></div><div class="sk"></div>';
  try{m.innerHTML=await V[S.tab]()}catch(x){m.innerHTML=`<div class="empty">${esc(x)}</div>`}}
 async function boot(){try{if(!S.u&&localStorage.bd){try{const o=JSON.parse(localStorage.bd);if(S.t&&S.t.split('.')[0]==o.u.id){Object.assign(S,o);shell();show()}}catch(e){}}
- const d=await api('boot');Object.assign(S,{u:d.user,c:d.cfg,units:d.units,med:d.med,wo:d.wo});try{localStorage.bd=JSON.stringify({u:S.u,c:S.c,units:S.units,med:S.med,wo:S.wo})}catch(e){}shell();show();if(S.u.wajib)force()}catch(x){S.t?toast(x):auth()}}
+ apply(await api('boot'))}catch(x){S.t?toast(x):auth()}}
 function pick(){sheet(`<h3>Rekam Data</h3><button class="btn" onclick="cl();fMed()">🩺 Medical Check Up</button><button class="btn s" onclick="cl();fWo()">🏃 Workout</button>`)}
 function save(d,a,id){d.querySelector('form').onsubmit=async e=>{e.preventDefault();const b=e.target.querySelector('button');b.disabled=1;b.textContent='Menyimpan…';
  try{await api(a,{...val(e.target),id});d.remove();toast('Tersimpan ✓');const w=a=='saveMed'?crit(val(e.target)):[];if(w.length)warn(w);await boot()}catch(x){toast(x);b.disabled=0;b.textContent='Simpan'}}}
@@ -145,7 +147,7 @@ async adm(){return`<div class="tab">${[['umum','Umum'],['ref','Referensi'],['usr
 /* ---------- Views admin ---------- */
 const P=o=>o&&!o.min&&o.n?Math.round(o.h/o.n*100):null;
 const A={
-async umum(){const d=S.rep=await api('dashAdmin',{per:S.per,f:S.fl}),t=d.terbaru;
+async umum(){const d=S.rep=await apic('dashAdmin',{per:S.per,f:S.fl},120000),t=d.terbaru;
  if(t.min)return fbar()+`<div class="empty">Dashboard tampil setelah minimal 5 pegawai merekam data (saat ini ${t.n}).<br>Ini menjaga anonimitas pegawai.</div>`;
  const R=Object.keys(N).map(k=>({k,p:P(t[k]),n:t[k].n,tr:d.tren.filter(x=>!x.min).map(x=>P(x[k]))}));
  return fbar()+xbar()+`<div class="g2"><div class="c"><div class="m">Terdaftar</div><b style="font-size:22px">${d.pegawai}</b></div><div class="c"><div class="m">Sudah merekam</div><b style="font-size:22px">${t.n}</b></div></div>`+
@@ -154,7 +156,7 @@ async umum(){const d=S.rep=await api('dashAdmin',{per:S.per,f:S.fl}),t=d.terbaru
  ${tAdm(d)}<div class="c"><b>Aktivitas 30 hari terakhir</b><p class="m">${d.wo.aktif} pegawai aktif · ${d.wo.sesi} sesi workout</p></div>`},
 ref(){const L={gula_puasa:'Gula puasa (mg/dL)',gula_2jam:'Gula 2 jam setelah makan (mg/dL)',gula_sewaktu:'Gula sewaktu (mg/dL)',sis:'Sistolik (mmHg)',dia:'Diastolik (mmHg)',au_pria:'Asam urat pria (mg/dL)',au_wanita:'Asam urat wanita (mg/dL)',kol:'Kolesterol total (mg/dL)',pengingat_tgl:'Mulai kirim pengingat bulanan (tanggal 1-28)'};
  return`<form class="c" onsubmit="saveRef(event)"><h3>Batas nilai normal</h3><p class="m">Nilai di atas/sama dengan batas dianggap "di atas normal" (asam urat: di atas batas).</p>${Object.keys(L).map(k=>F(k,L[k],S.c[k])).join('')}${F('unit_list','Daftar unit kerja (pisahkan dengan koma)',(S.units||[]).join(', '),'text')}<button class="btn">Simpan</button></form>`},
-async tan(){const L=await api('challenges');return`<form class="c" onsubmit="saveCh(event)"><h3>Buat Tantangan Kantor</h3><p class="m">Pegawai ikut secara sukarela. Peringkat antar unit memakai rata-rata menit per peserta.</p>${F('nama','Nama tantangan','','text','required')}${F('mulai','Mulai',today(),'date','required')}${F('selesai','Selesai','','date','required')}<button class="btn">Buat Tantangan</button></form>`+L.map(c=>`<div class="c"><div class="row"><div><b>${esc(c.nama)}</b><div class="m">${c.mulai} s/d ${c.selesai} · ${c.n} peserta</div></div><button class="lk" onclick="delCh('${c.id}')">Hapus</button></div></div>`).join('')},
+async tan(){const L=await apic('challenges',0,60000);return`<form class="c" onsubmit="saveCh(event)"><h3>Buat Tantangan Kantor</h3><p class="m">Pegawai ikut secara sukarela. Peringkat antar unit memakai rata-rata menit per peserta.</p>${F('nama','Nama tantangan','','text','required')}${F('mulai','Mulai',today(),'date','required')}${F('selesai','Selesai','','date','required')}<button class="btn">Buat Tantangan</button></form>`+L.map(c=>`<div class="c"><div class="row"><div><b>${esc(c.nama)}</b><div class="m">${c.mulai} s/d ${c.selesai} · ${c.n} peserta</div></div><button class="lk" onclick="delCh('${c.id}')">Hapus</button></div></div>`).join('')},
 async usr(){const l=S.users=await api('listUsers');return l.map(x=>`<div class="c"><div class="row"><div><b>${esc(x.nama)}</b><div class="m">${esc(x.email)}</div></div><span><button class="lk" onclick="resetU('${x.id}')">Reset sandi</button> <button class="lk" onclick="delU('${x.id}')">Hapus</button></span></div>
 ${x.id==S.u.id?'<span class="bd">Anda</span>':`<select onchange="setRole('${x.id}',this.value)"><option value="individu" ${x.role=='individu'?'selected':''}>Pegawai</option><option value="admin" ${x.role=='admin'?'selected':''}>Admin</option></select>`}</div>`).join('')}};
 async function saveRef(e){e.preventDefault();try{await api('saveRef',val(e.target));toast('Referensi tersimpan ✓');await boot()}catch(x){toast(x)}}
@@ -170,7 +172,7 @@ function prof(){const u=S.u,d=sheet(`<h3>Profil Saya</h3><div style="text-align:
 function fPass(){const d=sheet(`<h3>Ganti Kata Sandi</h3><form>${F('lama','Kata sandi lama','','password','required')}${F('baru','Kata sandi baru (min. 6 karakter)','','password','required')}<button class="btn">Simpan</button></form>`);save(d,'changePass')}
 function pickPhoto(i){const f=i.files[0];if(!f)return;const im=new Image();
  im.onload=async()=>{const s=Math.min(im.width,im.height),c=document.createElement('canvas');c.width=c.height=256;c.getContext('2d').drawImage(im,(im.width-s)/2,(im.height-s)/2,s,s,0,0,256,256);
-  try{toast('Mengunggah foto…');await api('savePhoto',{data:c.toDataURL('image/jpeg',.8)});cl();toast('Foto diperbarui ✓');await boot()}catch(x){toast(x)}};
+  try{toast('Mengunggah foto…');await api('savePhoto',{data:c.toDataURL('image/jpeg',.8)});cl();toast('Foto diperbarui ✓');S.u.fotoData='';await boot()}catch(x){toast(x)}};
  im.onerror=()=>toast('File bukan gambar yang valid');im.src=URL.createObjectURL(f)}
 async function delPhoto(){try{await api('delPhoto');cl();toast('Foto dihapus');await boot()}catch(x){toast(x)}}
 async function resetU(id){const x=S.users.find(z=>z.id==id);if(!confirm('Reset kata sandi '+x.nama+'?'))return;
@@ -249,7 +251,7 @@ function tgtCard(c){const s=wkStats(),n=S.wo.length,pct=Math.min(100,Math.round(
  return`<div class="c"><div class="row"><b>Target Minggu Ini</b><button class="lk" onclick="fTgt()">Ubah target</button></div><div class="row"><span style="font-size:22px;font-weight:700">${s.mc} / ${s.tg} mnt</span><span class="bd">${s.streak>0?'🔥 '+s.streak+' minggu':'Mulai streak!'}</span></div><div class="bar"><i style="width:${pct}%"></i></div><div class="m">${pct>=100?'🎉 Target minggu ini tercapai!':'Sisa '+(s.tg-s.mc)+' menit (Senin–Minggu)'}</div>
 ${c?'':`<div class="bgs">${B.map(([i,t,d,ok])=>`<div class="bgd ${ok?'':'off'}"><div style="font-size:26px">${i}</div><b>${t}</b><div class="m">${d}</div></div>`).join('')}</div>`}</div>`}
 function fTgt(){const d=sheet(`<h3>Target Workout Mingguan</h3><p class="m">WHO menyarankan sekitar 150 menit aktivitas fisik sedang per minggu untuk orang dewasa.</p><form>${F('menit','Target (menit per minggu)',S.u.target||150,'number','required min="30" max="2000"')}<button class="btn">Simpan</button></form>`);save(d,'saveTarget')}
-async function chSec(){try{const L=await api('challenges');if(!L.length)return'';const T=today();
+async function chSec(){try{const L=await apic('challenges',0,60000);if(!L.length)return'';const T=today();
  return L.map(c=>{const st=T<c.mulai?'Akan datang':T>c.selesai?'Selesai':'Berlangsung',mine=S.wo.filter(x=>x.tanggal>=c.mulai&&x.tanggal<=c.selesai).reduce((s,x)=>s+(+x.durasi||0),0);
  return`<div class="c"><div class="row"><b>🏆 ${esc(c.nama)}</b><span class="bd ${st=='Selesai'?'h':''}">${st}</span></div><div class="m">${c.mulai} s/d ${c.selesai} · ${c.n} peserta · ${c.total} menit total</div>
 ${c.ikut?`<p>Kontribusi Anda: <b>${mine} menit</b></p>`:''}${c.board.length?c.board.map((b,i)=>`<div class="row"><span>${i+1}. ${esc(b.unit)}</span><b>${b.min?'<span class="m">menunggu peserta ('+b.n+')</span>':b.avg+' mnt/orang'}</b></div>`).join(''):'<p class="m">Belum ada peserta.</p>'}
@@ -257,6 +259,15 @@ ${st!='Selesai'?`<button class="btn ${c.ikut?'s':''}" onclick="joinCh('${c.id}',
 async function joinCh(id,j){try{await api(j?'joinCh':'leaveCh',{id});toast(j?'Anda ikut tantangan 🎉':'Anda keluar dari tantangan');show()}catch(x){toast(x)}}
 async function saveCh(e){e.preventDefault();try{await api('saveCh',val(e.target));toast('Tantangan dibuat ✓');show()}catch(x){toast(x)}}
 async function delCh(id){if(!confirm('Hapus tantangan ini?'))return;try{await api('delCh',{id});toast('Dihapus');show()}catch(x){toast(x)}}
+
+/* ---------- Muat data cepat ---------- */
+function apply(d){const old=S.u&&S.u.fotoData;Object.assign(S,{u:d.user,c:d.cfg,units:d.units,med:d.med,wo:d.wo});if(old&&S.u.foto)S.u.fotoData=old;
+ try{localStorage.bd=JSON.stringify({u:S.u,c:S.c,units:S.units,med:S.med,wo:S.wo})}catch(e){}
+ shell();show();loadFoto();setTimeout(prefetch,400);if(S.u.wajib)force()}
+function prefetch(){apic('challenges',0,60000).catch(()=>{});if(S.u.role=='admin')apic('dashAdmin',{per:S.per,f:S.fl},120000).catch(()=>{})}
+async function loadFoto(){if(!S.u.foto||S.u.fotoData)return;try{const d=await api('foto');S.u.fotoData=d.d;
+ const b=document.querySelector('header .av');if(b){b.style.backgroundImage=`url(${d.d})`;b.textContent=''}
+ try{localStorage.bd=JSON.stringify({u:S.u,c:S.c,units:S.units,med:S.med,wo:S.wo})}catch(e){}}catch(e){}}
 
 /* ---------- Lupa kata sandi ---------- */
 function fForgot(){cl();const d=sheet(`<h3>Lupa Kata Sandi</h3><p class="m">Masukkan email akun Anda. Kami kirim kode 6 digit ke email tersebut.</p><form>${F('email','Email','','email','required')}<button class="btn">Kirim Kode</button></form><p class="m">Email tidak masuk? Cek folder spam, atau hubungi admin untuk reset manual.</p>`);
@@ -266,6 +277,6 @@ function fReset(em){const d=sheet(`<h3>Atur Kata Sandi Baru</h3><p class="m">Kod
  d.querySelector('form').onsubmit=async e=>{e.preventDefault();const b=e.target.querySelector('button');b.disabled=1;b.textContent='Menyimpan…';
   try{await api('resetCode',{...val(e.target),email:em});d.remove();toast('Kata sandi diganti. Silakan masuk.')}catch(x){toast(x);b.disabled=0;b.textContent='Simpan Kata Sandi'}}}
 
-S.t?boot():auth();
+S.t?boot():(auth(),api('meta').then(d=>S.units=d.units).catch(()=>{}));
 if('serviceWorker' in navigator)navigator.serviceWorker.register('sw.js');
 </script></body></html>
