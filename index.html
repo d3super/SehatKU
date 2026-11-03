@@ -69,6 +69,10 @@ header{position:sticky;top:0;z-index:4;padding-bottom:10px;border-width:0 0 1px;
 @supports not ((backdrop-filter:blur(1px)) or (-webkit-backdrop-filter:blur(1px))){.c,.qa button,header,.sh{background:rgba(255,255,255,.96)}}
 @media (prefers-reduced-transparency:reduce){.c,.qa button,header,.sh{background:#fff;-webkit-backdrop-filter:none;backdrop-filter:none}}
 .dots{display:flex;flex-wrap:wrap;gap:6px}.dots i{width:26px;height:26px;border-radius:50%;background:#e3e9f5;font-size:12px;display:grid;place-items:center;font-style:normal;cursor:pointer}.dots i.d{background:var(--g);color:#fff}.dots i.t{background:var(--gg);color:#0f2557;font-weight:700}
+.xw{position:sticky;top:0;height:0;z-index:3;display:flex;justify-content:flex-end}
+.xb{width:40px;height:40px;margin-top:-6px;border-radius:50%;border:1px solid #e3e9f5;background:rgba(255,255,255,.92);color:var(--t);font-size:18px;line-height:1;box-shadow:0 4px 14px rgba(15,37,87,.15);cursor:pointer}
+.sh:has(.xw) h3{padding-right:48px}
+.btn.gold{background:var(--gg);color:#0f2557;margin-top:10px}
 </style></head><body><div id="app"></div>
 <script>
 const API='https://script.google.com/macros/s/AKfycbyncBaRg4Lv4t6uKYW2xhwsnS5FXcmsoDEO8mGRvCgtJOJnLPJoj5OlAQevUQAFO4tlUg/exec';
@@ -86,6 +90,9 @@ async function api(a,p){if(!/^(boot|challenges|dashAdmin|listUsers|meta|foto|pan
 function toast(m){const d=document.createElement('div');d.className='toast';d.textContent=m;document.body.append(d);setTimeout(()=>d.remove(),2800)}
 const F=(n,l,v='',t='number',x='')=>`<label>${l}<input name="${n}" type="${t}" value="${esc(v)}" step="any" ${x}></label>`;
 const SEL=(n,l,o,v)=>`<label>${l}<select name="${n}">${o.map(([k,t])=>`<option value="${k}" ${k==v?'selected':''}>${t}</option>`).join('')}</select></label>`;
+function closable(d){const s=d.querySelector('.sh');
+ s.insertAdjacentHTML('afterbegin','<div class="xw"><button type="button" class="xb" aria-label="Tutup" onclick="cl()">✕</button></div>');
+ s.insertAdjacentHTML('beforeend','<button type="button" class="btn gold" onclick="cl()">Batal</button>');return d}
 function sheet(h){const d=document.createElement('div');d.className='ov';d.innerHTML=`<div class="sh">${h}</div>`;d.onclick=e=>{if(e.target==d)d.remove()};document.body.append(d);return d}
 const cl=()=>document.querySelectorAll('.ov').forEach(x=>x.remove());
 const spark=(v,w=110,h=30)=>{v=v.filter(x=>x!=null&&!isNaN(x));if(v.length<2)return'';const a=Math.min(...v),r=(Math.max(...v)-a)||1;
@@ -127,16 +134,16 @@ async function boot(){try{if(!S.u&&localStorage.bd){try{const o=JSON.parse(local
 function pick(){sheet(`<h3>Rekam Data</h3><button class="btn" onclick="cl();fMed()">🩺 Medical Check Up</button><button class="btn s" onclick="cl();fWo()">🏃 Workout</button><button class="btn s" onclick="cl();fMeal()">🍽️ Makanan</button>`)}
 function save(d,a,id){d.querySelector('form').onsubmit=async e=>{e.preventDefault();const b=e.target.querySelector('button');b.disabled=1;b.textContent='Menyimpan…';
  try{await api(a,{...val(e.target),id});d.remove();toast('Tersimpan ✓');const w=a=='saveMed'?crit(val(e.target)):[];if(w.length)warn(w);await boot()}catch(x){toast(x);b.disabled=0;b.textContent='Simpan'}}}
-function fMed(m={}){save(sheet(`<h3>${m.id?'Ubah':'Rekam'} Medical Check Up</h3><form>${F('tanggal','Tanggal',m.tanggal||today(),'date','required')}
+function fMed(m={}){save(closable(sheet(`<h3>${m.id?'Ubah':'Rekam'} Medical Check Up</h3><form>${F('tanggal','Tanggal',m.tanggal||today(),'date','required')}
 ${F('bb','Berat badan (kg)',m.bb)}
 ${SEL('jenisGula','Jenis pengukuran gula darah',[['puasa','Puasa'],['2jam','2 jam setelah makan'],['sewaktu','Sewaktu']],m.jenisGula)}
 ${F('gula','Gula darah (mg/dL)',m.gula)}${F('sis','Tekanan darah sistolik (mmHg)',m.sis)}${F('dia','Tekanan darah diastolik (mmHg)',m.dia)}
 ${F('asamUrat','Asam urat (mg/dL)',m.asamUrat)}${F('kolesterol','Kolesterol total (mg/dL)',m.kolesterol)}${F('catatan','Catatan',m.catatan,'text')}
-<button class="btn">Simpan</button></form>`),'saveMed',m.id)}
-function fWo(m={}){save(sheet(`<h3>${m.id?'Ubah':'Rekam'} Workout</h3><form>${F('tanggal','Tanggal',m.tanggal||today(),'date','required')}
+<button class="btn">Simpan</button></form>`)),'saveMed',m.id)}
+function fWo(m={}){save(closable(sheet(`<h3>${m.id?'Ubah':'Rekam'} Workout</h3><form>${F('tanggal','Tanggal',m.tanggal||today(),'date','required')}
 ${SEL('jenis','Jenis workout',['Lari','Jalan','Sepeda','Renang','Gym','Senam/Yoga','Lainnya'].map(x=>[x,x]),m.jenis)}
 ${F('durasi','Durasi (menit)',m.durasi,'number','required')}${F('kalori','Kalori (kkal)',m.kalori)}${F('hr','Rata-rata detak jantung (bpm)',m.hr)}
-<button class="btn">Simpan</button></form>`),'saveWo',m.id)}
+<button class="btn">Simpan</button></form>`)),'saveWo',m.id)}
 async function del(k,id){if(!confirm('Hapus data ini?'))return;try{await api('del'+k,{id});toast('Dihapus');await boot()}catch(x){toast(x)}}
 
 /* ---------- Views pegawai ---------- */
@@ -267,7 +274,7 @@ function tgtCard(c){const s=wkStats(),n=S.wo.length,pct=Math.min(100,Math.round(
  B=[['👟','Langkah Pertama','1 sesi workout',n>=1],['🔟','10 Sesi','10 sesi workout',n>=10],['🏃','30 Sesi','30 sesi workout',n>=30],['🎯','Target Tercapai','Capai target 1 minggu',s.met>=1],['🔥','Konsisten','Streak 4 minggu',s.streak>=4],['⏱️','1000 Menit','Total 1000 menit',s.tot>=1000]];
  return`<div class="c"><div class="row"><b>Target Minggu Ini</b><button class="lk" onclick="fTgt()">Ubah target</button></div><div class="row"><span style="font-size:22px;font-weight:700">${s.mc} / ${s.tg} mnt</span><span class="bd">${s.streak>0?'🔥 '+s.streak+' minggu':'Mulai streak!'}</span></div><div class="bar"><i style="width:${pct}%"></i></div><div class="m">${pct>=100?'🎉 Target minggu ini tercapai!':'Sisa '+(s.tg-s.mc)+' menit (Senin–Minggu)'}</div>
 ${c?'':`<div class="bgs">${B.map(([i,t,d,ok])=>`<div class="bgd ${ok?'':'off'}"><div style="font-size:26px">${i}</div><b>${t}</b><div class="m">${d}</div></div>`).join('')}</div>`}</div>`}
-function fTgt(){const d=sheet(`<h3>Target Workout Mingguan</h3><p class="m">WHO menyarankan sekitar 150 menit aktivitas fisik sedang per minggu untuk orang dewasa.</p><form>${F('menit','Target (menit per minggu)',S.u.target||150,'number','required min="30" max="2000"')}<button class="btn">Simpan</button></form>`);save(d,'saveTarget')}
+function fTgt(){const d=sheet(`<h3>Target Workout Mingguan</h3><p class="m">WHO menyarankan sekitar 150 menit aktivitas fisik sedang per minggu untuk orang dewasa.</p><form>${F('menit','Target (menit per minggu)',S.u.target||150,'number','required min="30" max="2000"')}<button class="btn">Simpan</button></form>`);save(closable(d),'saveTarget')}
 async function chSec(){try{const L=await apic('challenges',0,60000);if(!L.length)return'';const T=today();
  return L.map(c=>{const st=T<c.mulai?'Akan datang':T>c.selesai?'Selesai':'Berlangsung',mine=S.wo.filter(x=>x.tanggal>=c.mulai&&x.tanggal<=c.selesai).reduce((s,x)=>s+(+x.durasi||0),0);
  return`<div class="c"><div class="row"><b>🏆 ${esc(c.nama)}</b><span class="bd ${st=='Selesai'?'h':''}">${st}</span></div><div class="m">${c.mulai} s/d ${c.selesai} · ${c.n} peserta · ${c.total} menit total</div>
@@ -299,7 +306,7 @@ async function fMeal(){let L=[];try{L=await apic('pangan',0,36e5)}catch(e){}
  const d=sheet(`<h3>Catat Makanan</h3><form>${F('tanggal','Tanggal',today(),'date','required')}${SEL('waktu','Waktu makan',['Sarapan','Makan siang','Makan malam','Selingan'].map(x=>[x,x]))}
 <label>Nama makanan (ketik untuk mencari)<input name="nama" list="pgl" autocomplete="off" required></label><datalist id="pgl">${L.map(x=>`<option value="${esc(x.nama)}">`).join('')}</datalist><div class="m" id="pgi"></div>
 ${F('jml','Jumlah porsi','1','number','min="0.25"')}${F('kkal','Kalori (kkal)','','number','required')}${F('protein','Protein (g)')}${F('karbo','Karbohidrat (g)')}${F('lemak','Lemak (g)')}<button class="btn">Simpan</button></form>`);
- const f=d.querySelector('form'),fill=()=>{const it=L.find(x=>x.nama.toLowerCase()==f.nama.value.trim().toLowerCase()),j=+f.jml.value||1,r=v=>Math.round(v*j*10)/10;
+ closable(d);const f=d.querySelector('form'),fill=()=>{const it=L.find(x=>x.nama.toLowerCase()==f.nama.value.trim().toLowerCase()),j=+f.jml.value||1,r=v=>Math.round(v*j*10)/10;
   $('#pgi').textContent=it?'1 porsi = '+it.porsi+' (estimasi)':'';if(it){f.kkal.value=Math.round(it.kkal*j);f.protein.value=r(it.protein);f.karbo.value=r(it.karbo);f.lemak.value=r(it.lemak)}};
  f.nama.addEventListener('input',fill);f.jml.addEventListener('input',fill);save(d,'saveMeal')}
 const PLAN={1400:[['Sarapan','Oatmeal 40 g + 1 telur rebus + ½ pisang',330],['Makan siang','Nasi ½ porsi, ayam panggang 80 g, tumis sayur',430],['Makan malam','Pepes ikan 80 g, sayur bening, tempe 2 potong',400],['Selingan','Yoghurt plain + buah potong',240]],
