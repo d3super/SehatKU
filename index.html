@@ -73,6 +73,7 @@ header{position:sticky;top:0;z-index:4;padding-bottom:10px;border-width:0 0 1px;
 .xb{width:40px;height:40px;margin-top:-6px;border-radius:50%;border:1px solid #e3e9f5;background:rgba(255,255,255,.92);color:var(--t);font-size:18px;line-height:1;box-shadow:0 4px 14px rgba(15,37,87,.15);cursor:pointer}
 .sh:has(.xw) h3{padding-right:48px}
 .btn.gold{background:var(--gg);color:#0f2557;margin-top:10px}
+.fr{display:grid;grid-template-columns:1fr 62px 80px;gap:8px;align-items:end;margin-top:2px}
 </style></head><body><div id="app"></div>
 <script>
 const API='https://script.google.com/macros/s/AKfycbyncBaRg4Lv4t6uKYW2xhwsnS5FXcmsoDEO8mGRvCgtJOJnLPJoj5OlAQevUQAFO4tlUg/exec';
@@ -303,13 +304,30 @@ function calc(){const u=S.u,w=+u.bb,h=+u.tb,a=+u.umur;if(!(w&&h&&a))return null;
  return{bmr,tdee,t,pr,fa,ch,dir,tb,wk:dir?Math.ceil(Math.abs(tb-w)/rt):0,lim:dir<0&&t<=Math.max(tdee*.75,flo)+10}}
 const prow=(l,v,t,u)=>`<div class="row"><span>${l}</span><span class="m">${Math.round(v)} / ${t} ${u}</span></div><div class="bar"><i style="width:${Math.min(100,v/t*100)}%"></i></div>`;
 async function saveKal(e){e.preventDefault();try{await api('saveKalori',val(e.target));toast('Target tersimpan ✓');await boot()}catch(x){toast(x)}}
-async function foodForm(title,a,m={},nodate){let L=[];try{L=await apic('pangan',0,36e5)}catch(e){}
+async function foodEdit(title,a,m={},nodate){let L=[];try{L=await apic('pangan',0,36e5)}catch(e){}
  const d=sheet(`<h3>${title}</h3><form>${nodate?'':F('tanggal','Tanggal',today(),'date','required')}${SEL('waktu','Waktu makan',['Sarapan','Makan siang','Makan malam','Selingan'].map(x=>[x,x]),m.waktu)}
 <label>Nama makanan (ketik untuk mencari)<input name="nama" list="pgl" autocomplete="off" required value="${esc(m.nama||'')}"></label><datalist id="pgl">${L.map(x=>`<option value="${esc(x.nama)}">`).join('')}</datalist><div class="m" id="pgi"></div>
 ${F('jml','Jumlah porsi',m.jml||'1','number','min="0.25"')}${F('kkal','Kalori (kkal)',m.kkal,'number','required')}${F('protein','Protein (g)',m.protein)}${F('karbo','Karbohidrat (g)',m.karbo)}${F('lemak','Lemak (g)',m.lemak)}<button class="btn">Simpan</button></form>`);
  closable(d);const f=d.querySelector('form'),fill=()=>{const it=L.find(x=>x.nama.toLowerCase()==f.nama.value.trim().toLowerCase()),j=+f.jml.value||1,r=v=>Math.round(v*j*10)/10;
   $('#pgi').textContent=it?'1 porsi = '+it.porsi+' (estimasi)':'';if(it){f.kkal.value=Math.round(it.kkal*j);f.protein.value=r(it.protein);f.karbo.value=r(it.karbo);f.lemak.value=r(it.lemak)}};
  f.nama.addEventListener('input',fill);f.jml.addEventListener('input',fill);save(d,a,m.id)}
+const ROWS=['Nasi / karbohidrat','Lauk','Lauk 2 / minuman / buah','Sayuran'];
+async function foodForm(title,a,m={},nodate){if(m.id)return foodEdit(title,a,m,nodate);
+ let L=[];try{L=await apic('pangan',0,36e5)}catch(e){}
+ const d=sheet(`<h3>${title}</h3><form>${nodate?'':F('tanggal','Tanggal',today(),'date','required')}${SEL('waktu','Waktu makan',['Sarapan','Makan siang','Makan malam','Selingan'].map(x=>[x,x]),m.waktu)}<datalist id="pgl">${L.map(x=>`<option value="${esc(x.nama)}">`).join('')}</datalist>
+${ROWS.map((l,i)=>`<div class="fr"><label>${l}<input name="n${i}" list="pgl" autocomplete="off" placeholder="Ketik nama makanan"></label><label>Porsi<input name="j${i}" type="number" step="any" min="0.25" value="1" inputmode="decimal"></label><label>kkal<input name="k${i}" type="number" step="any" inputmode="decimal"></label><div class="m" id="h${i}" style="grid-column:1/-1"></div></div>`).join('')}
+<div class="c" style="margin:12px 0 0;padding:12px"><b id="tt">Total: 0 kkal</b></div><button class="btn">Simpan</button></form>`);
+ closable(d);const f=d.querySelector('form'),
+ rows=()=>ROWS.map((_,i)=>{const nm=f['n'+i].value.trim();if(!nm)return null;const it=L.find(x=>x.nama.toLowerCase()==nm.toLowerCase()),j=+f['j'+i].value||1,kk=+f['k'+i].value||0,rt=it&&it.kkal?kk/(it.kkal*j):0,r=v=>it?Math.round(v*j*rt*10)/10:0;
+  return{nama:nm,jml:j,kkal:kk,protein:r(it&&it.protein),karbo:r(it&&it.karbo),lemak:r(it&&it.lemak)}}).filter(Boolean),
+ tot=()=>{const R=rows(),s=k=>Math.round(R.reduce((t,x)=>t+x[k],0)*10)/10;$('#tt').textContent=`Total: ${Math.round(s('kkal'))} kkal · P ${s('protein')} g · K ${s('karbo')} g · L ${s('lemak')} g`};
+ ROWS.forEach((_,i)=>{const fill=()=>{const it=L.find(x=>x.nama.toLowerCase()==f['n'+i].value.trim().toLowerCase()),j=+f['j'+i].value||1;$('#h'+i).textContent=it?'1 porsi = '+it.porsi+' (estimasi)':'';if(it)f['k'+i].value=Math.round(it.kkal*j);tot()};
+  f['n'+i].addEventListener('input',fill);f['j'+i].addEventListener('input',fill);f['k'+i].addEventListener('input',tot)});
+ f.onsubmit=async e=>{e.preventDefault();const items=rows(),bad=items.find(x=>!(x.kkal>0));
+  if(!items.length)return toast('Isi minimal satu makanan');if(bad)return toast('Isi kalori untuk "'+bad.nama+'"');
+  const b=f.querySelector('button.btn');b.disabled=1;b.textContent='Menyimpan…';
+  try{await api(a=='saveMeal'?'saveMeals':'addRencana',{tanggal:f.tanggal?f.tanggal.value:'',waktu:f.waktu.value,items});d.remove();toast('Tersimpan ✓');await boot()}
+  catch(x){toast(x);b.disabled=0;b.textContent='Simpan'}}}
 function fMeal(){return foodForm('Catat Makanan','saveMeal')}
 function fRc(m,w){return foodForm(m&&m.id?'Ubah Makanan':'Tambah ke Rencana','saveRencana',m||{waktu:w},1)}
 async function useSample(a){if(S.rencana.length&&!confirm('Ganti rencana Anda dengan paket contoh ini?'))return;
