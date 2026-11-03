@@ -75,6 +75,7 @@ header{position:sticky;top:0;z-index:4;padding-bottom:10px;border-width:0 0 1px;
 .btn.gold{background:var(--gg);color:#0f2557;margin-top:10px}
 .fr{display:grid;grid-template-columns:1fr 62px 80px;gap:8px;align-items:end;margin-top:2px}
 .mrow{display:flex;justify-content:space-between;align-items:center;width:100%;min-height:50px;padding:0 4px;border:0;border-bottom:1px solid #eef2fb;background:none;font-size:16px;font-weight:600;color:var(--t);text-align:left;cursor:pointer}
+.tab{overflow-x:auto}.tab button{flex:1 0 auto;padding:0 14px}
 </style></head><body><div id="app"></div>
 <script>
 const API='https://script.google.com/macros/s/AKfycbyncBaRg4Lv4t6uKYW2xhwsnS5FXcmsoDEO8mGRvCgtJOJnLPJoj5OlAQevUQAFO4tlUg/exec';
@@ -87,7 +88,7 @@ const has=v=>v!==''&&v!=null,today=()=>new Date().toLocaleDateString('sv'),by=(a
 const val=f=>Object.fromEntries(new FormData(f));
 let AC={};
 async function apic(a,p,ms){const k=a+JSON.stringify(p||0),c=AC[k];if(c&&Date.now()-c.t<ms)return c.d;const d=await api(a,p);AC[k]={t:Date.now(),d};return d}
-async function api(a,p){if(!/^(boot|challenges|dashAdmin|listUsers|meta|foto|pangan)$/.test(a)){const ch=/^(joinCh|leaveCh|saveCh|delCh|delUser)$/.test(a);Object.keys(AC).forEach(k=>{if(ch||!/^(challenges|pangan)/.test(k))delete AC[k]})}const r=await(await fetch(API,{method:'POST',body:JSON.stringify({a,p,t:S.t})})).json();
+async function api(a,p){if(!/^(boot|challenges|dashAdmin|listUsers|meta|foto|pangan|audit)$/.test(a)){const ch=/^(joinCh|leaveCh|saveCh|delCh|delUser)$/.test(a);Object.keys(AC).forEach(k=>{if(ch||!/^(challenges|pangan)/.test(k))delete AC[k]})}const r=await(await fetch(API,{method:'POST',body:JSON.stringify({a,p,t:S.t})})).json();
  if(!r.ok){if(/Sesi/.test(r.e))out();throw r.e}return r.d}
 function toast(m){const d=document.createElement('div');d.className='toast';d.textContent=m;document.body.append(d);setTimeout(()=>d.remove(),2800)}
 const F=(n,l,v='',t='number',x='')=>`<label>${l}<input name="${n}" type="${t}" value="${esc(v)}" step="any" ${x}></label>`;
@@ -168,7 +169,7 @@ wo(){const l=[...S.wo].sort(by).reverse(),top=tgtCard()+`<div id="chs">${S.chHtm
  return top+l.map(x=>`<div class="c"><div class="row"><b>${esc(x.jenis)} · ${esc(x.tanggal)}</b><span><button class="lk" onclick="fWo(S.wo.find(z=>z.id=='${x.id}'))">Ubah</button> <button class="lk" onclick="del('Wo','${x.id}')">Hapus</button></span></div>
 <div class="m">${x.durasi||0} menit${has(x.kalori)?' · '+x.kalori+' kkal':''}${has(x.hr)?' · '+x.hr+' bpm':''}</div></div>`).join('')},
 async gz(){return`<div class="tab">${[['kal','Kalori'],['plan','Rencana Makan'],['prog','Program']].map(([k,n])=>`<button class="${S.gz==k?'on':''}" onclick="S.gz='${k}';show()">${n}</button>`).join('')}</div>`+G[S.gz]()+'<p class="m" style="margin:0 20px 16px">Informasi umum, bukan pengganti nasihat dokter atau ahli gizi.</p>'},
-async adm(){return`<div class="tab">${[['umum','Umum'],['ref','Referensi'],['usr','Pengguna'],['tan','Tantangan']].map(([k,n])=>`<button class="${S.sub==k?'on':''}" onclick="S.sub='${k}';show()">${n}</button>`).join('')}</div>`+await A[S.sub]()}};
+async adm(){return`<div class="tab">${[['umum','Umum'],['ref','Referensi'],['usr','Pengguna'],['tan','Tantangan'],['aud','Audit']].map(([k,n])=>`<button class="${S.sub==k?'on':''}" onclick="S.sub='${k}';show()">${n}</button>`).join('')}</div>`+await A[S.sub]()}};
 
 /* ---------- Views admin ---------- */
 const P=o=>o&&!o.min&&o.n?Math.round(o.h/o.n*100):null;
@@ -183,6 +184,7 @@ async umum(){const d=S.rep=await apic('dashAdmin',{per:S.per,f:S.fl},120000),t=d
 ref(){const L={gula_puasa:'Gula puasa (mg/dL)',gula_2jam:'Gula 2 jam setelah makan (mg/dL)',gula_sewaktu:'Gula sewaktu (mg/dL)',sis:'Sistolik (mmHg)',dia:'Diastolik (mmHg)',au_pria:'Asam urat pria (mg/dL)',au_wanita:'Asam urat wanita (mg/dL)',kol:'Kolesterol total (mg/dL)',pengingat_tgl:'Mulai kirim pengingat bulanan (tanggal 1-28)'};
  return`<form class="c" onsubmit="saveRef(event)"><h3>Batas nilai normal</h3><p class="m">Nilai di atas/sama dengan batas dianggap "di atas normal" (asam urat: di atas batas).</p>${Object.keys(L).map(k=>F(k,L[k],S.c[k])).join('')}${F('unit_list','Daftar unit kerja (pisahkan dengan koma)',(S.units||[]).join(', '),'text')}<button class="btn">Simpan</button></form>`},
 async tan(){const L=await apic('challenges',0,60000);return`<form class="c" onsubmit="saveCh(event)"><h3>Buat Tantangan Kantor</h3><p class="m">Pegawai ikut secara sukarela. Peringkat antar unit memakai rata-rata menit per peserta.</p>${F('nama','Nama tantangan','','text','required')}${F('mulai','Mulai',today(),'date','required')}${F('selesai','Selesai','','date','required')}<button class="btn">Buat Tantangan</button></form>`+L.map(c=>`<div class="c"><div class="row"><div><b>${esc(c.nama)}</b><div class="m">${c.mulai} s/d ${c.selesai} · ${c.n} peserta</div></div><button class="lk" onclick="delCh('${c.id}')">Hapus</button></div></div>`).join('')},
+async aud(){const l=await api('audit');return l.length?l.map(x=>`<div class="c"><div class="row"><b>${esc(x.aksi)}</b><span class="m">${esc(x.waktu)}</span></div><div class="m">${esc(x.admin)} → ${esc(x.target)} ${esc(x.detail)}</div></div>`).join(''):'<div class="empty">Belum ada catatan aksi admin.</div>'},
 async usr(){const l=S.users=await api('listUsers');return l.map(x=>`<div class="c"><div class="row"><div><b>${esc(x.nama)}</b><div class="m">${esc(x.email)}</div></div><span><button class="lk" onclick="resetU('${x.id}')">Reset sandi</button> <button class="lk" onclick="delU('${x.id}')">Hapus</button></span></div>
 ${x.id==S.u.id?'<span class="bd">Anda</span>':`<select onchange="setRole('${x.id}',this.value)"><option value="individu" ${x.role=='individu'?'selected':''}>Pegawai</option><option value="admin" ${x.role=='admin'?'selected':''}>Admin</option></select>`}</div>`).join('')}};
 async function saveRef(e){e.preventDefault();try{await api('saveRef',val(e.target));toast('Referensi tersimpan ✓');await boot()}catch(x){toast(x)}}
