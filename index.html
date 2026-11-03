@@ -85,7 +85,7 @@ const has=v=>v!==''&&v!=null,today=()=>new Date().toLocaleDateString('sv'),by=(a
 const val=f=>Object.fromEntries(new FormData(f));
 let AC={};
 async function apic(a,p,ms){const k=a+JSON.stringify(p||0),c=AC[k];if(c&&Date.now()-c.t<ms)return c.d;const d=await api(a,p);AC[k]={t:Date.now(),d};return d}
-async function api(a,p){if(!/^(boot|challenges|dashAdmin|listUsers|meta|foto|pangan)$/.test(a))AC={};const r=await(await fetch(API,{method:'POST',body:JSON.stringify({a,p,t:S.t})})).json();
+async function api(a,p){if(!/^(boot|challenges|dashAdmin|listUsers|meta|foto|pangan)$/.test(a)){const ch=/^(joinCh|leaveCh|saveCh|delCh|delUser)$/.test(a);Object.keys(AC).forEach(k=>{if(ch||!/^(challenges|pangan)/.test(k))delete AC[k]})}const r=await(await fetch(API,{method:'POST',body:JSON.stringify({a,p,t:S.t})})).json();
  if(!r.ok){if(/Sesi/.test(r.e))out();throw r.e}return r.d}
 function toast(m){const d=document.createElement('div');d.className='toast';d.textContent=m;document.body.append(d);setTimeout(()=>d.remove(),2800)}
 const F=(n,l,v='',t='number',x='')=>`<label>${l}<input name="${n}" type="${t}" value="${esc(v)}" step="any" ${x}></label>`;
@@ -126,8 +126,8 @@ function scoreCard(l,f){if(!l)return'';const s=wkStats(),nf=Object.values(f).fil
 const nb=(k,i,t)=>`<button data-k="${k}" onclick="S.tab='${k}';show()">${i}<span>${t}</span></button>`;
 function shell(){$('#app').innerHTML=`<header><div class="row" style="gap:10px"><img src="icon-192.png" alt="" width="34" height="34" style="border-radius:10px"><h1>SigerFit</h1></div><div class="row"><button class="av" onclick="prof()" aria-label="Profil" ${avs()}>${S.u.fotoData?'':esc(S.u.nama[0]||'?')}</button>${S.u.role=='admin'?'<button class="lk" onclick="S.tab=\'adm\';show()">Admin</button>':''}<button class="lk" onclick="out()">Keluar</button></div></header><div id="main"></div>
 <nav><div class="ng">${nb('dash',IC.h,'Beranda')}${nb('med',IC.m,'Medis')}</div><button class="fab" onclick="pick()" aria-label="Rekam Data" title="Rekam Data">+</button><div class="ng">${nb('wo',IC.w,'Workout')}${nb('gz',IC.g,'Nutrisi')}</div></nav>`}
-async function show(){document.querySelectorAll('nav button[data-k]').forEach(b=>b.classList.toggle('on',b.dataset.k==S.tab));
- const m=$('#main');m.innerHTML='<div class="sk"></div><div class="sk"></div>';
+async function show(q){document.querySelectorAll('nav button[data-k]').forEach(b=>b.classList.toggle('on',b.dataset.k==S.tab));
+ const m=$('#main');if(!q)m.innerHTML='<div class="sk"></div><div class="sk"></div>';
  try{m.innerHTML=await V[S.tab]()}catch(x){m.innerHTML=`<div class="empty">${esc(x)}</div>`}}
 async function boot(){try{if(!S.u&&localStorage.bd){try{const o=JSON.parse(localStorage.bd);if(S.t&&S.t.split('.')[0]==o.u.id){Object.assign(S,o);shell();show()}}catch(e){}}
  apply(await api('boot'))}catch(x){S.t?toast(x):auth()}}
@@ -162,7 +162,7 @@ ${tUser()}${tgtCard(1)}`},
 med(){const l=[...S.med].sort(by).reverse();if(!l.length)return empty('Belum ada rekaman medical check up.');
  return l.map(x=>{const f=fl(x,S.u.gender,S.c);return`<div class="c"><div class="row"><b>${esc(x.tanggal)}</b><span><button class="lk" onclick="fMed(S.med.find(z=>z.id=='${x.id}'))">Ubah</button> <button class="lk" onclick="del('Med','${x.id}')">Hapus</button></span></div>
 ${[['gula','Gula darah'+(has(x.gula)?' ('+x.jenisGula+')':''),has(x.gula)&&x.gula],['td','Tekanan darah',(has(x.sis)||has(x.dia))&&x.sis+'/'+x.dia],['bb','Berat badan',has(x.bb)&&x.bb+' kg'],['au','Asam urat',has(x.asamUrat)&&x.asamUrat],['kol','Kolesterol',has(x.kolesterol)&&x.kolesterol]].filter(i=>i[2]).map(i=>`<div class="row"><span class="m">${i[1]}</span><span>${esc(i[2])} ${i[0]=='bb'?'':badge(f[i[0]])}</span></div>`).join('')}</div>`}).join('')},
-async wo(){const l=[...S.wo].sort(by).reverse(),top=tgtCard()+await chSec();if(!l.length)return top+empty('Belum ada rekaman workout.');
+wo(){const l=[...S.wo].sort(by).reverse(),top=tgtCard()+`<div id="chs">${S.chHtml||''}</div>`;setTimeout(loadCh,0);if(!l.length)return top+empty('Belum ada rekaman workout.');
  return top+l.map(x=>`<div class="c"><div class="row"><b>${esc(x.jenis)} · ${esc(x.tanggal)}</b><span><button class="lk" onclick="fWo(S.wo.find(z=>z.id=='${x.id}'))">Ubah</button> <button class="lk" onclick="del('Wo','${x.id}')">Hapus</button></span></div>
 <div class="m">${x.durasi||0} menit${has(x.kalori)?' · '+x.kalori+' kkal':''}${has(x.hr)?' · '+x.hr+' bpm':''}</div></div>`).join('')},
 async gz(){return`<div class="tab">${[['kal','Kalori'],['plan','Rencana Makan'],['prog','Program']].map(([k,n])=>`<button class="${S.gz==k?'on':''}" onclick="S.gz='${k}';show()">${n}</button>`).join('')}</div>`+G[S.gz]()+'<p class="m" style="margin:0 20px 16px">Informasi umum, bukan pengganti nasihat dokter atau ahli gizi.</p>'},
@@ -279,7 +279,8 @@ async function chSec(){try{const L=await apic('challenges',0,60000);if(!L.length
  return L.map(c=>{const st=T<c.mulai?'Akan datang':T>c.selesai?'Selesai':'Berlangsung',mine=S.wo.filter(x=>x.tanggal>=c.mulai&&x.tanggal<=c.selesai).reduce((s,x)=>s+(+x.durasi||0),0);
  return`<div class="c"><div class="row"><b>🏆 ${esc(c.nama)}</b><span class="bd ${st=='Selesai'?'h':''}">${st}</span></div><div class="m">${c.mulai} s/d ${c.selesai} · ${c.n} peserta · ${c.total} menit total</div>
 ${c.ikut?`<p>Kontribusi Anda: <b>${mine} menit</b></p>`:''}${c.board.length?c.board.map((b,i)=>`<div class="row"><span>${i+1}. ${esc(b.unit)}</span><b>${b.min?'<span class="m">menunggu peserta ('+b.n+')</span>':b.avg+' mnt/orang'}</b></div>`).join(''):'<p class="m">Belum ada peserta.</p>'}
-${st!='Selesai'?`<button class="btn ${c.ikut?'s':''}" onclick="joinCh('${c.id}',${!c.ikut})">${c.ikut?'Keluar dari tantangan':'Ikut tantangan'}</button>`:''}<p class="m">Peringkat antar unit berdasarkan rata-rata menit per peserta (minimal 3 peserta per unit). Ikut serta bersifat sukarela.</p></div>`}).join('')}catch(e){return''}}
+${st!='Selesai'?`<button class="btn ${c.ikut?'s':''}" onclick="joinCh('${c.id}',${!c.ikut})">${c.ikut?'Keluar dari tantangan':'Ikut tantangan'}</button>`:''}<p class="m">Peringkat antar unit berdasarkan rata-rata menit per peserta (minimal 3 peserta per unit). Ikut serta bersifat sukarela.</p></div>`}).join('')}catch(e){return null}}
+async function loadCh(){const el=$('#chs');if(!el)return;const h=await chSec();if(h===null)return;S.chHtml=h;const e=$('#chs');if(e)e.innerHTML=h}
 async function joinCh(id,j){try{await api(j?'joinCh':'leaveCh',{id});toast(j?'Anda ikut tantangan 🎉':'Anda keluar dari tantangan');show()}catch(x){toast(x)}}
 async function saveCh(e){e.preventDefault();try{await api('saveCh',val(e.target));toast('Tantangan dibuat ✓');show()}catch(x){toast(x)}}
 async function delCh(id){if(!confirm('Hapus tantangan ini?'))return;try{await api('delCh',{id});toast('Dihapus');show()}catch(x){toast(x)}}
@@ -321,7 +322,14 @@ const PROG=[
 {id:'tenis',ikon:'🎾',nama:'Nutrisi Persiapan Tenis (7 hari)',desc:'Energi dan cairan untuk pertandingan yang panjang dan intens.',days:[['Hidrasi harian','Biasakan minum sebelum haus; bawa botol ke lapangan.'],['Sarapan pra-main','Karbohidrat + sedikit protein 2–3 jam sebelum bermain.'],['Camilan antar set','Pisang, kurma, atau roti isi selai; ambil saat pergantian sisi.'],['Elektrolit','Saat panas/berkeringat banyak, tambahkan elektrolit atau sedikit garam.'],['Pemulihan','Protein + karbohidrat dalam 1–2 jam setelah main.'],['Tidur dan makan malam','Makan malam ringan, tidur 7–8 jam sebelum pertandingan.'],['Hari H','Makan familiar, cairan teratur, bekal camilan siap.']]},
 {id:'sepeda',ikon:'🚴',nama:'Nutrisi Persiapan Bersepeda (7 hari)',desc:'Bahan bakar dan cairan untuk gowes jarak menengah hingga jauh.',days:[['Hidrasi','Isi dua bidon; target 500–750 ml per jam saat cuaca panas.'],['Sarapan pra-gowes','Karbohidrat 2–3 jam sebelum berangkat.'],['Makan sebelum lapar','Pada gowes >90 menit, mulai makan sejak 30–45 menit pertama.'],['Uji bekal','Coba 30–60 g karbohidrat per jam (pisang, roti, gel) saat latihan.'],['Pemulihan','Protein + karbohidrat segera setelah gowes.'],['Persiapan bekal','Siapkan bekal, elektrolit, dan uang tunai.'],['Hari H','Sarapan biasa, minum teratur, makan sesuai jadwal.']]}];
 const daysSince=m=>Math.floor((new Date(today()+'T00:00:00')-new Date(m+'T00:00:00'))/864e5);
-async function progAct(a,pid,hari){if(a=='quitProg'&&!confirm('Berhenti dari program ini?'))return;try{await api(a,{pid,hari});await boot()}catch(x){toast(x)}}
+function persist(){try{localStorage.bd=JSON.stringify({u:S.u,c:S.c,units:S.units,med:S.med,wo:S.wo,meal:S.meal,prog:S.prog})}catch(e){}}
+async function progAct(a,pid,hari){if(a=='quitProg'&&!confirm('Berhenti dari program ini?'))return;
+ const bak=JSON.stringify(S.prog);
+ if(a=='startProg')S.prog.push({pid,mulai:today(),hari:''});
+ else if(a=='quitProg')S.prog=S.prog.filter(x=>x.pid!=pid);
+ else{const r=S.prog.find(x=>x.pid==pid);if(r){const d=String(r.hari||'').match(/\d+/g)||[],h=String(hari),i=d.indexOf(h);i<0?d.push(h):d.splice(i,1);r.hari=d.map(x=>'D'+x).join(' ')}}
+ show(1);
+ try{await api(a,{pid,hari});persist()}catch(x){S.prog=JSON.parse(bak);show(1);toast(x)}}
 const G={
 kal(){const k=calc(),u=S.u,T=today(),ml=S.meal.filter(x=>x.tanggal==T),sm=f=>ml.reduce((s,x)=>s+(+x[f]||0),0);
  const res=k?`<div class="c"><div class="m">Target kalori harian</div><div><span style="font-size:40px;font-weight:700">${k.t}</span> <span class="m">kkal</span></div><div class="m">${k.dir==0?'Mempertahankan berat badan':(k.dir<0?'Menurunkan':'Menaikkan')+' berat ke '+k.tb+' kg · sekitar '+k.wk+' minggu'}</div>
